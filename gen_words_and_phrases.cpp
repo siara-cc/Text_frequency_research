@@ -585,8 +585,8 @@ void processPost(string& utf8body) {
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX) {
             cache_stats stats = ix_obj->get_cache_stats();
-            cout << line_count << " " << ix_obj->get_max_key_len() << " " << words_generated << " " << " " 
-                  << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " "
+            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << words_generated << " " << " " 
+                  << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " " << endl << "    "
                   << stats.total_cache_misses_since << " " << stats.cache_flush_count << " "
                   << num_words << " " << num_phrases << " " << num_grams << " "
                   << duration<double>(steady_clock::now()-start).count() << endl;
@@ -777,6 +777,7 @@ int main(int argc, const char** argv)
     const int cache_size = atoi(argv[2]);
     const int page_size = atoi(argv[3]);
     const char* const outFilename = argv[4];
+    cout << "Csz: " << cache_size << ", pgsz: " << page_size << endl;
     if (argc > 5)
        start_at = atoi(argv[5]);
     //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
@@ -826,14 +827,15 @@ int main(int argc, const char** argv)
         cout << "BEGIN EXCLUSIVE;" << endl;
     }
 
-    rdb_options.IncreaseParallelism();
-    rdb_options.OptimizeLevelStyleCompaction();
-    // create the DB if it's not already present
-    rdb_options.create_if_missing = true;
-    // open DB
-
-    Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
-    //assert(s.ok());
+    if (INSERT_INTO_ROCKSDB) {
+      rdb_options.IncreaseParallelism();
+      rdb_options.OptimizeLevelStyleCompaction();
+      // create the DB if it's not already present
+      rdb_options.create_if_missing = true;
+      // open DB
+      Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
+      //assert(s.ok());
+    }
 
     start = steady_clock::now();
     decompressFile_orDie(inFilename);
@@ -866,11 +868,12 @@ int main(int argc, const char** argv)
         cout << "Total words generated: " << words_generated << endl;
         cout << "Words inserted " << words_inserted << endl;
         cout << "Words updated: " << words_updated << endl;
+
+        delete ix_obj;
     }
 
-    delete ix_obj;
-
-    delete rocksdb1;
+    if (INSERT_INTO_ROCKSDB)
+      delete rocksdb1;
 
     return 0;
 
