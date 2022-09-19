@@ -8,7 +8,13 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
+#define INSERT_INTO_IDX 1
+#define INSERT_INTO_SQLITE 0
+#define INSERT_INTO_ROCKSDB 0
+#define GEN_SQL 0
+
 #include <stdio.h>     // fprintf
+#include <stdlib.h>
 #include <zstd.h>      // presumes zstd library is installed
 #include <fasttext.h>
 #include "common.h"    // Helper functions, CHECK(), and CHECK_ZSTD()
@@ -25,8 +31,24 @@
 #include "../index_research/src/basix.h"
 #include "../index_research/src/bfos.h"
 
+#include "rocksdb/db.h"
+#include "rocksdb/slice.h"
+#include "rocksdb/options.h"
+
+using ROCKSDB_NAMESPACE::DB;
+using ROCKSDB_NAMESPACE::Options;
+using ROCKSDB_NAMESPACE::PinnableSlice;
+using ROCKSDB_NAMESPACE::ReadOptions;
+using ROCKSDB_NAMESPACE::Status;
+using ROCKSDB_NAMESPACE::WriteBatch;
+using ROCKSDB_NAMESPACE::WriteOptions;
+
 using namespace std;
 using namespace chrono;
+
+std::string kDBPath = "./rocksdb_word_freq";
+DB* rocksdb1;
+Options rdb_options;
 
 time_point<steady_clock> start;
 fasttext::FastText ftext;
@@ -86,6 +108,8 @@ void printPredictions(
 
 void insert_into_db(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
 
+    if (!INSERT_INTO_SQLITE)
+      return;
     sqlite3_reset(ins_word_freq_stmt);
     sqlite3_bind_text(ins_word_freq_stmt, 1, utf8word, word_len, SQLITE_STATIC);
     sqlite3_bind_text(ins_word_freq_stmt, 2, lang_code, strlen(lang_code), SQLITE_STATIC);
@@ -111,6 +135,8 @@ long total_word_lens = 0;
 void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
     //cout << "[" << utf8word << "]" << endl;
     //return;
+    if (!INSERT_INTO_IDX)
+      return;
     int16_t value_len;
     uint32_t count = 1;
     char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
@@ -124,10 +150,45 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
     }
     if (word_len > max_word_len)
         max_word_len = word_len;
+}
+
+void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
+    //cout << "[" << utf8word << "]" << endl;
+    //return;
+    if (!INSERT_INTO_ROCKSDB)
+      return;
+    int16_t value_len;
+    uint32_t count = 1;
+    char key[400];
+    string count_str("1");
+    strcpy(key, lang_code);
+    strcat(key, " ");
+    strcat(key, utf8word);
+    //cout << "Key: " << key << endl;
+    Status s = rocksdb1->Get(ReadOptions(), key, &count_str);
+    if (!s.IsNotFound()) {
+      //cout << "found: " << count_str << endl;
+      count = atoi(count_str.c_str());
+      count++;
+      words_updated++;
+    } else {
+      //cout << "not found: " << endl;
+      count = 1;
+      words_inserted++;
+      total_word_lens += word_len;
+    }
+    count_str = std::to_string(count);
+    s = rocksdb1->Put(WriteOptions(), key, count_str);
+    assert(s.ok());
+    //cout << "Put complete " << endl;
+    if (word_len > max_word_len)
+      max_word_len = word_len;
     words_generated++;
 }
 
 void output_sql(string& utf8word, int len, const char *lang_code, const char *is_word, const char *source) {
+    if (!GEN_SQL)
+      return;
     string ins_sql = "INSERT INTO word_freq (word, lang, count, is_word, source) VALUES ('";
     string utf8word_encoded;
     size_t sq_loc = utf8word.find('\'');
@@ -146,7 +207,7 @@ void output_sql(string& utf8word, int len, const char *lang_code, const char *is
     ins_sql.append(is_word);
     ins_sql.append("', '");
     ins_sql.append(source);
-    ins_sql.append("') ON CONFLICT DO UPDATE SET count = count + 1, is_word = iif(is_word='y', 'y', excluded.is_word), "
+    ins_sql.append("') ON CONFLICT DO UPDATE SET count = count + 1, , is_word = iif(is_word='y', 'y', excluded.is_word), "
                              "source = iif(instr(source, 'r') = 0, source||'r', source);");
     cout << ins_sql << endl;
 
@@ -162,17 +223,21 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     if (word_len == 1 && max_ord < 4256)
         return;
 
+    words_generated++;
+
     string utf8word = myconv.to_bytes(word);
-    //insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
-    //output_sql(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    insert_into_rocksdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    output_sql(utf8word, utf8word.length(), lang_code, is_word, "r");
     if (is_word[0] == 'y') {
         size_t spc_loc = utf8word.find(' ');
         if (spc_loc != string::npos && word.find(' ', spc_loc+1) == string::npos && spc_loc > 1) {
             string word_with_spc = utf8word.substr(0, spc_loc+1);
-            //insert_into_db(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
+            insert_into_db(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_idx(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
-            //output_sql(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+            insert_into_rocksdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
+            output_sql(word_with_spc, word_with_spc.length(), lang_code, "n", "r");
         }
     }
 }
@@ -486,6 +551,9 @@ const char *lang_list = "[ja][ko][zh][th][my]";
 const int lang_list_size = strlen(lang_list);
 void processPost(string& utf8body) {
 
+    if (line_count < start_at)
+        return;
+
     //if (utf8body.find("hey y’all, i’m georgia!") == string::npos)
     //    return;
     //if (strcmp(lang_code, "hi") == 0)
@@ -515,24 +583,29 @@ void processPost(string& utf8body) {
     split_words(utf8body, lang_code, is_spaceless_lang);
 
     if (lines_processed % 10000 == 0) {
-        // cache_stats stats = ix_obj->get_cache_stats();
-        cout << line_count << " " << lines_processed << " " << words_generated << " " << " " 
-            << words_inserted << " " << total_word_lens << " " 
-            << num_words << " " << num_phrases << " " << num_grams << " "
-            << duration<double>(steady_clock::now()-start).count() << endl;
-        // cout << line_count << " " << ix_obj->get_max_key_len() << " " << words_generated << " " << " " 
-        //     << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " "
-        //     << stats.total_cache_misses_since << " " << stats.cache_flush_count << " "
-        //     << num_words << " " << num_phrases << " " << num_grams << " "
-        //     << duration<double>(steady_clock::now()-start).count() << endl;
+        if (INSERT_INTO_IDX) {
+            cache_stats stats = ix_obj->get_cache_stats();
+            cout << line_count << " " << ix_obj->get_max_key_len() << " " << words_generated << " " << " " 
+                  << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " "
+                  << stats.total_cache_misses_since << " " << stats.cache_flush_count << " "
+                  << num_words << " " << num_phrases << " " << num_grams << " "
+                  << duration<double>(steady_clock::now()-start).count() << endl;
+            //cout << ix_obj->size() << endl;
+        } else {
+            cout << line_count << " " << lines_processed << " " << words_generated << " " << " " 
+                << words_inserted << " " << total_word_lens << " " 
+                << num_words << " " << num_phrases << " " << num_grams << " "
+                << duration<double>(steady_clock::now()-start).count() << endl;
+        }
         start = steady_clock::now();
-        // cout << "COMMIT; BEGIN EXCLUSIVE;" << endl;
-        // cout << ix_obj->size() << endl;
-        //  rc = sqlite3_exec(db, "COMMIT;BEGIN EXCLUSIVE", NULL, NULL, NULL);
-        //  if (rc) {
-        //     fprintf(stderr, "Can't begin txn: %s\n", sqlite3_errmsg(db));
-        //     return;
-        //  }
+        if (INSERT_INTO_SQLITE) {
+            cout << "COMMIT; BEGIN EXCLUSIVE;" << endl;
+            rc = sqlite3_exec(db, "COMMIT;BEGIN EXCLUSIVE", NULL, NULL, NULL);
+            if (rc) {
+                fprintf(stderr, "Can't begin txn: %s\n", sqlite3_errmsg(db));
+                return;
+            }
+        }
     }
 
     //if (utf8body.find("hey y’all, i’m georgia!") != string::npos)
@@ -709,78 +782,96 @@ int main(int argc, const char** argv)
     //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
     ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
 
-    // char page_sz_str[30];
-    // sprintf(page_sz_str, "PRAGMA page_size = %d", page_size);
-    // rc = sqlite3_exec(db, page_sz_str, NULL, NULL, NULL);
-    // rc = sqlite3_open(outFilename, &db);
-    // //rc = sqlite3_open(":memory:", &db);
-    // if (rc) {
-    //    fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-    //    return 1;
-    // } else
-    //    fprintf(stderr, "Opened database successfully\n");
+    if (INSERT_INTO_SQLITE) {
+        char page_sz_str[30];
+        sprintf(page_sz_str, "PRAGMA page_size = %d", page_size);
+        rc = sqlite3_exec(db, page_sz_str, NULL, NULL, NULL);
+        rc = sqlite3_open(outFilename, &db);
+        //rc = sqlite3_open(":memory:", &db);
+        if (rc) {
+            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+            return 1;
+        } else
+            fprintf(stderr, "Opened database successfully\n");
 
-    // rc = sqlite3_exec(db, "CREATE TABLE word_freq (word, lang, count, is_word, source, mark, primary key (lang, word)) without rowid", NULL, NULL, NULL);
-    // if (rc) {
-    //   fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(db));
-    //   //return 1;
-    // }
+        rc = sqlite3_exec(db, "CREATE TABLE word_freq (word, lang, count, is_word, source, mark, primary key (lang, word)) without rowid", NULL, NULL, NULL);
+        if (rc) {
+            fprintf(stderr, "Can't create table: %s\n", sqlite3_errmsg(db));
+            //return 1;
+        }
 
-    // rc = sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "PRAGMA cache_size = 500000", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "PRAGMA threads = 2", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "PRAGMA auto_vacuum = 0", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "PRAGMA temp_store = MEMORY", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "PRAGMA locking_mode = EXCLUSIVE", NULL, NULL, NULL);
-    // rc = sqlite3_exec(db, "BEGIN EXCLUSIVE", NULL, NULL, NULL);
-    // if (rc) {
-    //    fprintf(stderr, "Can't begin txn: %s\n", sqlite3_errmsg(db));
-    //    return 1;
-    // }
+        rc = sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA cache_size = 500000", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA threads = 2", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA auto_vacuum = 0", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA temp_store = MEMORY", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA locking_mode = EXCLUSIVE", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "BEGIN EXCLUSIVE", NULL, NULL, NULL);
+        if (rc) {
+            fprintf(stderr, "Can't begin txn: %s\n", sqlite3_errmsg(db));
+            return 1;
+        }
 
-    // const char *sql_str = "INSERT INTO word_freq (word, lang, count, is_word, source) "
-    //                         "VALUES (?, ?, ?, ?, ?) ON CONFLICT DO UPDATE SET count = count + 1, "
-    //                         "source = iif(instr(source, 'r') = 0, source||'r', source)";
-    // rc = sqlite3_prepare_v2(db, sql_str, strlen(sql_str), &ins_word_freq_stmt, &tail);
-    // if (rc != SQLITE_OK) {
-    //    fprintf(stderr, "Error preparing statement: %s\n", sqlite3_errmsg(db));
-    //    sqlite3_close(db);
-    //    return 1;
-    // }
+        const char *sql_str = "INSERT INTO word_freq (word, lang, count, is_word, source) "
+                                "VALUES (?, ?, ?, ?, ?) ON CONFLICT DO UPDATE SET count = count + 1, "
+                                "source = iif(instr(source, 'r') = 0, source||'r', source)";
+        rc = sqlite3_prepare_v2(db, sql_str, strlen(sql_str), &ins_word_freq_stmt, &tail);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Error preparing statement: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            return 1;
+        }
 
-    // cout << "BEGIN EXCLUSIVE;" << endl;
+        cout << "BEGIN EXCLUSIVE;" << endl;
+    }
+
+    rdb_options.IncreaseParallelism();
+    rdb_options.OptimizeLevelStyleCompaction();
+    // create the DB if it's not already present
+    rdb_options.create_if_missing = true;
+    // open DB
+
+    Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
+    //assert(s.ok());
 
     start = steady_clock::now();
     decompressFile_orDie(inFilename);
 
-    // rc = sqlite3_exec(db, "COMMIT", NULL, NULL, NULL);
-    // if (rc) {
-    //    fprintf(stderr, "Can't commit txn: %s\n", sqlite3_errmsg(db));
-    //    return 1;
-    // }
+    if (INSERT_INTO_SQLITE) {
+        rc = sqlite3_exec(db, "COMMIT", NULL, NULL, NULL);
+        if (rc) {
+        fprintf(stderr, "Can't commit txn: %s\n", sqlite3_errmsg(db));
+        return 1;
+        }
 
-    // sqlite3_close(db);
-    // cout << "COMMIT;" << endl;
+        sqlite3_close(db);
+        cout << "COMMIT;" << endl;
+    }
  
-    cout << "Total lines processed: " << line_count << endl;
-    ix_obj->printStats(ix_obj->size());
-    ix_obj->printNumLevels();
-    int16_t value_len = 0;
-    uint32_t *pcount = (uint32_t *) ix_obj->get("the", 3, &value_len);
-    if (pcount != NULL)
-        cout << *pcount << " " << value_len << endl;
-    pcount = (uint32_t *) ix_obj->get("and", 3, &value_len);
-    if (pcount != NULL)
-        cout << *pcount << " " << value_len << endl;
-    ix_obj->setCurrentBlockRoot();
-    cout << "Root filled size: " << ix_obj->filledSize() << endl;
-    cout << "Max word len: " << max_word_len << endl;
-    cout << "Total words generated: " << words_generated << endl;
-    cout << "Words inserted " << words_inserted << endl;
-    cout << "Words updated: " << words_updated << endl;
+    cout << "Total lines processed: " << lines_processed << endl;
+    if (INSERT_INTO_IDX) {
+        ix_obj->printStats(ix_obj->size());
+        ix_obj->printNumLevels();
+        int16_t value_len = 0;
+        uint32_t *pcount = (uint32_t *) ix_obj->get("the", 3, &value_len);
+        if (pcount != NULL)
+            cout << *pcount << " " << value_len << endl;
+        pcount = (uint32_t *) ix_obj->get("and", 3, &value_len);
+        if (pcount != NULL)
+            cout << *pcount << " " << value_len << endl;
+        ix_obj->setCurrentBlockRoot();
+        cout << "Root filled size: " << ix_obj->filledSize() << endl;
+        cout << "Max word len: " << max_word_len << endl;
+        cout << "Total words generated: " << words_generated << endl;
+        cout << "Words inserted " << words_inserted << endl;
+        cout << "Words updated: " << words_updated << endl;
+    }
 
     delete ix_obj;
 
+    delete rocksdb1;
+
     return 0;
+
 }
