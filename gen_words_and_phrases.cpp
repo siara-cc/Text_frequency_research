@@ -468,7 +468,7 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
     int utf8len;
     bool is_compound = false;
     for (int i = 0; i < str2split.length(); i += utf8len) {
-        if (str2split[i] == '/' && (str2split[i-1] == 'r' || str2split[i-1] == 'u')
+        if (i > 0 && str2split[i] == '/' && (str2split[i-1] == 'r' || str2split[i-1] == 'u')
                 && (i == 1 || (i > 1 && (str2split[i-2] == ' ' || str2split[i-2] == '/'
                                || str2split[i-2] == '\n' || str2split[i-2] == '|')))) {
             i++;
@@ -477,6 +477,8 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
             max_ord = 0;
             same_ltr_count = 0;
             word.clear();
+            utf8len = 0;
+            continue;
         }
         int32_t ltr = readUTF8(s_cstr, str2split.length(), i, &utf8len);
         int32_t ltr_t = transform_ltr(ltr);
@@ -688,10 +690,10 @@ static void decompressFile_orDie(const char* fname)
 {
     FILE* const fin  = fopen_orDie(fname, "rb");
     size_t const buffInSize = ZSTD_DStreamInSize();
-    void*  const buffIn  = malloc_orDie(buffInSize);
+    void*  const buffIn  = malloc_orDie(buffInSize + 1);
     FILE* const fout = stdout;
     size_t const buffOutSize = ZSTD_DStreamOutSize();  /* Guarantee to successfully flush at least one complete compressed block in all circumstances. */
-    void* buffOut = malloc_orDie(buffOutSize);
+    void* buffOut = malloc_orDie(buffOutSize + 1);
 
     ZSTD_DCtx* const dctx = ZSTD_createDCtx();
     CHECK(dctx != NULL, "ZSTD_createDCtx() failed!");
