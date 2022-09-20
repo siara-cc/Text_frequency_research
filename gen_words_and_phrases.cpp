@@ -8,10 +8,10 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-#define INSERT_INTO_IDX 1
-#define INSERT_INTO_SQLITE 0
-#define INSERT_INTO_ROCKSDB 0
-#define GEN_SQL 0
+int INSERT_INTO_IDX = 1;
+int INSERT_INTO_SQLITE = 0;
+int INSERT_INTO_ROCKSDB = 0;
+int GEN_SQL = 0;
 
 #include <stdio.h>     // fprintf
 #include <stdlib.h>
@@ -471,8 +471,7 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
         if (i > 0 && str2split[i] == '/' && (str2split[i-1] == 'r' || str2split[i-1] == 'u')
                 && (i == 1 || (i > 1 && (str2split[i-2] == ' ' || str2split[i-2] == '/'
                                || str2split[i-2] == '\n' || str2split[i-2] == '|')))) {
-            i++;
-            while (is_word(str2split[i++]));
+            while (is_word(str2split[++i]));
             prev_ltr = 0;
             max_ord = 0;
             same_ltr_count = 0;
@@ -588,8 +587,8 @@ void processPost(string& utf8body) {
         if (INSERT_INTO_IDX) {
             cache_stats stats = ix_obj->get_cache_stats();
             cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << words_generated << " " << " " 
-                  << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " " << endl << "    "
-                  << stats.total_cache_misses_since << " " << stats.cache_flush_count << " "
+                  << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " " << stats.pages_written << endl
+                  << "    " << stats.total_cache_misses_since << " " << stats.cache_flush_count << " "
                   << num_words << " " << num_phrases << " " << num_grams << " "
                   << duration<double>(steady_clock::now()-start).count() << endl;
             //cout << ix_obj->size() << endl;
@@ -773,6 +772,10 @@ int main(int argc, const char** argv)
     const char* const inFilename = argv[1];
     if (strcmp(inFilename, "-s") == 0) {
         string s = argv[2];
+        INSERT_INTO_IDX = 0;
+        INSERT_INTO_SQLITE = 0;
+        INSERT_INTO_ROCKSDB = 0;
+        GEN_SQL = 0;
         processPost(s);
         exit(1);
     }
