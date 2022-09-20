@@ -183,7 +183,6 @@ void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_co
     //cout << "Put complete " << endl;
     if (word_len > max_word_len)
       max_word_len = word_len;
-    words_generated++;
 }
 
 void output_sql(string& utf8word, int len, const char *lang_code, const char *is_word, const char *source) {
@@ -586,16 +585,16 @@ void processPost(string& utf8body) {
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX) {
             cache_stats stats = ix_obj->get_cache_stats();
-            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << words_generated << " " << " " 
-                  << words_inserted << " " << total_word_lens << " " << ix_obj->getNumLevels() << " " << stats.pages_written << endl
-                  << "    " << stats.total_cache_misses_since << " " << stats.cache_flush_count << " "
-                  << num_words << " " << num_phrases << " " << num_grams << " "
+            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << stats.cache_flush_count << " "
+                  << ix_obj->getNumLevels() << " " << stats.pages_written << " " << stats.total_cache_misses << endl
+                  << "    " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
+                  << words_inserted << " " << total_word_lens << " "
                   << duration<double>(steady_clock::now()-start).count() << endl;
             //cout << ix_obj->size() << endl;
         } else {
-            cout << line_count << " " << lines_processed << " " << words_generated << " " << " " 
+            cout << line_count << " " << lines_processed
+                << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
                 << words_inserted << " " << total_word_lens << " " 
-                << num_words << " " << num_phrases << " " << num_grams << " "
                 << duration<double>(steady_clock::now()-start).count() << endl;
         }
         start = steady_clock::now();
