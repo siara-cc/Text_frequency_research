@@ -8,8 +8,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 1;
-int INSERT_INTO_SQLITE = 0;
+int INSERT_INTO_IDX = 0;
+int INSERT_INTO_SQLITE = 1;
 int INSERT_INTO_ROCKSDB = 0;
 int GEN_SQL = 0;
 
@@ -31,9 +31,14 @@ int GEN_SQL = 0;
 #include "../index_research/src/basix.h"
 #include "../index_research/src/bfos.h"
 
+#include <libproc.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
 #include "rocksdb/db.h"
 #include "rocksdb/slice.h"
 #include "rocksdb/options.h"
+#include "rocksdb/advanced_options.h"
 
 using ROCKSDB_NAMESPACE::DB;
 using ROCKSDB_NAMESPACE::Options;
@@ -59,6 +64,9 @@ sqlite3 *db;
 char *zErrMsg = 0;
 int rc;
 sqlite3_stmt *ins_word_freq_stmt;
+sqlite3_stmt *sel_word_freq_stmt;
+sqlite3_stmt *upd_word_freq_stmt;
+sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
 bfos *ix_obj;
@@ -110,16 +118,74 @@ void insert_into_db(const char *utf8word, int word_len, const char *lang_code, c
 
     if (!INSERT_INTO_SQLITE)
       return;
-    sqlite3_reset(ins_word_freq_stmt);
-    sqlite3_bind_text(ins_word_freq_stmt, 1, utf8word, word_len, SQLITE_STATIC);
-    sqlite3_bind_text(ins_word_freq_stmt, 2, lang_code, strlen(lang_code), SQLITE_STATIC);
-    sqlite3_bind_int(ins_word_freq_stmt, 3, 1);
-    sqlite3_bind_text(ins_word_freq_stmt, 4, is_word, 1, SQLITE_STATIC);
-    sqlite3_bind_text(ins_word_freq_stmt, 5, source, 1, SQLITE_STATIC);
-    if (sqlite3_step(ins_word_freq_stmt) != SQLITE_DONE) {
-        fprintf(stderr, "Error inserting data: %s\n", sqlite3_errmsg(db));
-        //sqlite3_close(db);
-        return;
+
+    sqlite3_reset(sel_word_freq_stmt);
+    sqlite3_bind_text(sel_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+    sqlite3_bind_text(sel_word_freq_stmt, 2, utf8word, word_len, SQLITE_STATIC);
+    if (sqlite3_step(sel_word_freq_stmt) == SQLITE_ROW) {
+        int count = sqlite3_column_int(sel_word_freq_stmt, 0);
+        sqlite3_reset(upd_word_freq_stmt);
+        sqlite3_bind_text(upd_word_freq_stmt, 1, is_word, 1, SQLITE_STATIC);
+        sqlite3_bind_text(upd_word_freq_stmt, 2, lang_code, strlen(lang_code), SQLITE_STATIC);
+        sqlite3_bind_text(upd_word_freq_stmt, 3, utf8word, word_len, SQLITE_STATIC);
+        if (sqlite3_step(upd_word_freq_stmt) != SQLITE_DONE) {
+            fprintf(stderr, "Error updating data: %s\n", sqlite3_errmsg(db));
+            //sqlite3_close(db);
+            return;
+        }
+    } else {
+        char old_word[word_len + 1];
+        old_word[0] = '_';
+        strncpy(old_word + 1, utf8word, word_len);
+        sqlite3_reset(sel_word_freq_stmt);
+        sqlite3_bind_text(sel_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+        sqlite3_bind_text(sel_word_freq_stmt, 2, old_word, word_len + 1, SQLITE_STATIC);
+        if (sqlite3_step(sel_word_freq_stmt) == SQLITE_ROW) {
+            int count = sqlite3_column_int(sel_word_freq_stmt, 0);
+            if (count > 39) {
+                sqlite3_reset(ins_word_freq_stmt);
+                sqlite3_bind_text(ins_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+                sqlite3_bind_text(ins_word_freq_stmt, 2, utf8word, word_len, SQLITE_STATIC);
+                sqlite3_bind_int(ins_word_freq_stmt, 3, 41);
+                sqlite3_bind_text(ins_word_freq_stmt, 4, is_word, 1, SQLITE_STATIC);
+                sqlite3_bind_text(ins_word_freq_stmt, 5, source, 1, SQLITE_STATIC);
+                if (sqlite3_step(ins_word_freq_stmt) != SQLITE_DONE) {
+                    fprintf(stderr, "Error inserting data 1: %s\n", sqlite3_errmsg(db));
+                    //sqlite3_close(db);
+                    return;
+                }
+                sqlite3_reset(del_word_freq_stmt);
+                sqlite3_bind_text(del_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+                sqlite3_bind_text(del_word_freq_stmt, 2, old_word, word_len + 1, SQLITE_STATIC);
+                if (sqlite3_step(del_word_freq_stmt) != SQLITE_DONE) {
+                    fprintf(stderr, "Error deleting data: %s\n", sqlite3_errmsg(db));
+                    //sqlite3_close(db);
+                    return;
+                }
+            } else {
+                sqlite3_reset(upd_word_freq_stmt);
+                sqlite3_bind_text(upd_word_freq_stmt, 1, is_word, 1, SQLITE_STATIC);
+                sqlite3_bind_text(upd_word_freq_stmt, 2, lang_code, strlen(lang_code), SQLITE_STATIC);
+                sqlite3_bind_text(upd_word_freq_stmt, 3, old_word, word_len + 1, SQLITE_STATIC);
+                if (sqlite3_step(upd_word_freq_stmt) != SQLITE_DONE) {
+                    fprintf(stderr, "Error updating data 1: %s\n", sqlite3_errmsg(db));
+                    //sqlite3_close(db);
+                    return;
+                }
+            }
+        } else {
+            sqlite3_reset(ins_word_freq_stmt);
+            sqlite3_bind_text(ins_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+            sqlite3_bind_text(ins_word_freq_stmt, 2, old_word, word_len + 1, SQLITE_STATIC);
+            sqlite3_bind_int(ins_word_freq_stmt, 3, 1);
+            sqlite3_bind_text(ins_word_freq_stmt, 4, is_word, 1, SQLITE_STATIC);
+            sqlite3_bind_text(ins_word_freq_stmt, 5, source, 1, SQLITE_STATIC);
+            if (sqlite3_step(ins_word_freq_stmt) != SQLITE_DONE) {
+                fprintf(stderr, "Error inserting data 2: %s\n", sqlite3_errmsg(db));
+                //sqlite3_close(db);
+                return;
+            }
+        }
     }
 
 }
@@ -139,14 +205,33 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
       return;
     int16_t value_len;
     uint32_t count = 1;
-    char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
+    char *value = ix_obj->get(utf8word, (uint8_t) word_len, &value_len);
     if (value != NULL) {
         uint32_t *existing_count = (uint32_t *) value;
         (*existing_count)++;
         words_updated++;
     } else {
-        words_inserted++;
-        total_word_lens += word_len;
+        char old_word[word_len + 1];
+        old_word[0] = '_';
+        strncpy(old_word + 1, utf8word, word_len);
+        value = ix_obj->put(old_word, (uint8_t) word_len + 1, (const char*) &count, 4, &value_len);
+        if (value != NULL) {
+            uint32_t *existing_count = (uint32_t *) value;
+            if ((*existing_count) > 39) {
+                count = 41;
+                value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
+                if (value != NULL) {
+                    existing_count = (uint32_t *) value;
+                    (*existing_count)++;
+                }
+            } else {
+                (*existing_count)++;
+            }
+            words_updated++;
+        } else {
+            words_inserted++;
+            total_word_lens += word_len;
+        }
     }
     if (word_len > max_word_len)
         max_word_len = word_len;
@@ -598,8 +683,10 @@ void processPost(string& utf8body) {
                 << duration<double>(steady_clock::now()-start).count() << endl;
         }
         start = steady_clock::now();
-        if (INSERT_INTO_SQLITE) {
+        if (GEN_SQL) {
             cout << "COMMIT; BEGIN EXCLUSIVE;" << endl;
+        }
+        if (INSERT_INTO_SQLITE) {
             rc = sqlite3_exec(db, "COMMIT;BEGIN EXCLUSIVE", NULL, NULL, NULL);
             if (rc) {
                 fprintf(stderr, "Can't begin txn: %s\n", sqlite3_errmsg(db));
@@ -784,13 +871,11 @@ int main(int argc, const char** argv)
     cout << "Csz: " << cache_size << ", pgsz: " << page_size << endl;
     if (argc > 5)
        start_at = atoi(argv[5]);
-    //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
-    ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
 
     if (INSERT_INTO_SQLITE) {
-        char page_sz_str[30];
-        sprintf(page_sz_str, "PRAGMA page_size = %d", page_size);
-        rc = sqlite3_exec(db, page_sz_str, NULL, NULL, NULL);
+        char cmd_str[100];
+        sprintf(cmd_str, "PRAGMA page_size = %d", page_size);
+        rc = sqlite3_exec(db, cmd_str, NULL, NULL, NULL);
         rc = sqlite3_open(outFilename, &db);
         //rc = sqlite3_open(":memory:", &db);
         if (rc) {
@@ -807,7 +892,8 @@ int main(int argc, const char** argv)
 
         rc = sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
         rc = sqlite3_exec(db, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
-        rc = sqlite3_exec(db, "PRAGMA cache_size = 500000", NULL, NULL, NULL);
+        sprintf(cmd_str, "PRAGMA cache_size = %d", cache_size);
+        rc = sqlite3_exec(db, cmd_str, NULL, NULL, NULL);
         rc = sqlite3_exec(db, "PRAGMA threads = 2", NULL, NULL, NULL);
         rc = sqlite3_exec(db, "PRAGMA auto_vacuum = 0", NULL, NULL, NULL);
         rc = sqlite3_exec(db, "PRAGMA temp_store = MEMORY", NULL, NULL, NULL);
@@ -818,12 +904,38 @@ int main(int argc, const char** argv)
             return 1;
         }
 
-        const char *sql_str = "INSERT INTO word_freq (word, lang, count, is_word, source) "
-                                "VALUES (?, ?, ?, ?, ?) ON CONFLICT DO UPDATE SET count = count + 1, "
-                                "source = iif(instr(source, 'r') = 0, source||'r', source)";
-        rc = sqlite3_prepare_v2(db, sql_str, strlen(sql_str), &ins_word_freq_stmt, &tail);
+        const char *ins_sql_str = "INSERT INTO word_freq (lang, word, count, is_word, source) "
+                                    "VALUES (?, ?, ?, ?, ?)";
+                                    // " ON CONFLICT DO UPDATE SET count = count + 1, "
+                                    // "source = iif(instr(source, 'r') = 0, source||'r', source), "
+                                    // "is_word = iif(is_word = 'y', 'y', excluded.is_word)";
+        rc = sqlite3_prepare_v2(db, ins_sql_str, strlen(ins_sql_str), &ins_word_freq_stmt, &tail);
         if (rc != SQLITE_OK) {
-            fprintf(stderr, "Error preparing statement: %s\n", sqlite3_errmsg(db));
+            fprintf(stderr, "Error preparing statement 1: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            return 1;
+        }
+        const char *sel_sql_str = "SELECT count, is_word, source FROM word_freq "
+                                    "WHERE lang = ? and word = ?";
+        rc = sqlite3_prepare_v2(db, sel_sql_str, strlen(sel_sql_str), &sel_word_freq_stmt, &tail);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Error preparing statement 2: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            return 1;
+        }
+        const char *upd_sql_str = "UPDATE word_freq set count = count + 1, is_word=iif(is_word='y','y',?), "
+                                    "source = iif(instr(source, 'r') = 0, source||'r', source) "
+                                    "WHERE lang = ? and word = ?";
+        rc = sqlite3_prepare_v2(db, upd_sql_str, strlen(upd_sql_str), &upd_word_freq_stmt, &tail);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Error preparing statement 3: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            return 1;
+        }
+        const char *del_sql_str = "DELETE FROM word_freq WHERE lang = ? and word = ?";
+        rc = sqlite3_prepare_v2(db, del_sql_str, strlen(del_sql_str), &del_word_freq_stmt, &tail);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Error preparing statement 4: %s\n", sqlite3_errmsg(db));
             sqlite3_close(db);
             return 1;
         }
@@ -831,9 +943,27 @@ int main(int argc, const char** argv)
         cout << "BEGIN EXCLUSIVE;" << endl;
     }
 
+    if (INSERT_INTO_IDX) {
+      //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+      ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+    }
+
     if (INSERT_INTO_ROCKSDB) {
+      //   rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
+      //   rdb_options.write_buffer_size = 67108864; // 64MB
+      //   rdb_options.max_write_buffer_number = 3;
+      //   rdb_options.target_file_size_base = 67108864; // 64MB
+      //   rdb_options.max_background_compactions = 4;
+      //   rdb_options.level0_file_num_compaction_trigger = 8;
+      //   rdb_options.level0_slowdown_writes_trigger = 17;
+      //   rdb_options.level0_stop_writes_trigger = 24;
+      //   rdb_options.num_levels = 4;
+      //   rdb_options.max_bytes_for_level_base = 536870912; // 512MB
+      //   rdb_options.max_bytes_for_level_multiplier = 8;
+      //   rdb_options.compression = rocksdb::CompressionType::kSnappyCompression;
       rdb_options.IncreaseParallelism();
       rdb_options.OptimizeLevelStyleCompaction();
+      //rdb_options.SetCompressionType(DBCompressionType::Snappy);
       // create the DB if it's not already present
       rdb_options.create_if_missing = true;
       // open DB
@@ -847,11 +977,17 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_SQLITE) {
         rc = sqlite3_exec(db, "COMMIT", NULL, NULL, NULL);
         if (rc) {
-        fprintf(stderr, "Can't commit txn: %s\n", sqlite3_errmsg(db));
-        return 1;
+            fprintf(stderr, "Can't commit txn: %s\n", sqlite3_errmsg(db));
+            return 1;
         }
-
+        sqlite3_finalize(ins_word_freq_stmt);
+        sqlite3_finalize(sel_word_freq_stmt);
+        sqlite3_finalize(upd_word_freq_stmt);
+        sqlite3_finalize(del_word_freq_stmt);
         sqlite3_close(db);
+    }
+
+    if (GEN_SQL) {
         cout << "COMMIT;" << endl;
     }
  
@@ -878,6 +1014,14 @@ int main(int argc, const char** argv)
 
     if (INSERT_INTO_ROCKSDB)
       delete rocksdb1;
+
+    pid_t pid = getpid();
+    rusage_info_current rusage;
+    if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
+    {
+        cout << rusage.ri_diskio_bytesread << endl;
+        cout << rusage.ri_diskio_byteswritten << endl;
+    }
 
     return 0;
 
