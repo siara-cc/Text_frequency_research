@@ -561,7 +561,7 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
             max_ord = 0;
             same_ltr_count = 0;
             word.clear();
-            utf8len = 0;
+            utf8len = 1;
             continue;
         }
         int32_t ltr = readUTF8(s_cstr, str2split.length(), i, &utf8len);
