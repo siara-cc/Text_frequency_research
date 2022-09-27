@@ -8,8 +8,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 0;
-int INSERT_INTO_SQLITE = 1;
+int INSERT_INTO_IDX = 1;
+int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_ROCKSDB = 0;
 int GEN_SQL = 0;
 
@@ -31,7 +31,7 @@ int GEN_SQL = 0;
 #include "../index_research/src/basix.h"
 #include "../index_research/src/bfos.h"
 
-#include <libproc.h>
+//#include <libproc.h>
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -69,7 +69,8 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
-bfos *ix_obj;
+//bfos *ix_obj;
+basix *ix_obj;
 int start_at = 0;
 
 int kbhit() {
@@ -944,8 +945,8 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-      //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
-      ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+      ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+      //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_ROCKSDB) {
@@ -1015,13 +1016,13 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_ROCKSDB)
       delete rocksdb1;
 
-    pid_t pid = getpid();
-    rusage_info_current rusage;
-    if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
-    {
-        cout << rusage.ri_diskio_bytesread << endl;
-        cout << rusage.ri_diskio_byteswritten << endl;
-    }
+    //pid_t pid = getpid();
+    //rusage_info_current rusage;
+    //if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
+    //{
+    //    cout << rusage.ri_diskio_bytesread << endl;
+    //    cout << rusage.ri_diskio_byteswritten << endl;
+    //}
 
     return 0;
 
