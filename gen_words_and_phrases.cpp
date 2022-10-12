@@ -671,8 +671,9 @@ void processPost(string& utf8body) {
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX) {
             cache_stats stats = ix_obj->get_cache_stats();
-            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << stats.cache_flush_count << " "
-                  << ix_obj->getNumLevels() << " " << stats.pages_written << " " << stats.total_cache_misses << endl
+            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->getNumLevels()
+                  << " " << stats.pages_written << " " << stats.total_cache_misses
+                  << " " << stats.cache_flush_count << " " << stats.total_cache_req << endl
                   << "    " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
                   << words_inserted << " " << total_word_lens << " "
                   << duration<double>(steady_clock::now()-start).count() << endl;
