@@ -1,0 +1,5 @@
+*
+!gen_words_and_phrases*
+!compile_gen_words.sh
+!twitter.sh
+!.gitignore
