@@ -682,10 +682,10 @@ void processPost(string& utf8body) {
         if (INSERT_INTO_IDX) {
             cache_stats stats = ix_obj->get_cache_stats();
             cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->getNumLevels()
-                  << " " << stats.pages_written << " " << stats.total_cache_misses
-                  << " " << stats.cache_flush_count << " " << stats.total_cache_req << endl
-                  << "    " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
-                  << words_inserted << " " << total_word_lens << " "
+                  << " w" << stats.pages_written << " r" << stats.pages_read << " m" << stats.total_cache_misses
+                  << " f" << stats.cache_flush_count << " r" << stats.total_cache_req << " p" << stats.last_pages_to_flush << endl
+                  << "  " << words_generated << "=w" << num_words << "+p" << num_phrases << "+g" << num_grams
+                  << " i" << words_inserted << " l" << total_word_lens << " t"
                   << duration<double>(steady_clock::now()-start).count() << endl;
             //cout << ix_obj->size() << endl;
         } else {
