@@ -50,6 +50,7 @@ using ROCKSDB_NAMESPACE::WriteOptions;
 
 using namespace std;
 using namespace chrono;
+using namespace rocksdb;
 
 std::string kDBPath = "./rocksdb_word_freq";
 DB* rocksdb1;
@@ -69,8 +70,8 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
-//bfos *ix_obj;
-basix *ix_obj;
+bfos *ix_obj;
+//basix *ix_obj;
 int start_at = 0;
 
 int kbhit() {
@@ -956,26 +957,26 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-      ix_obj = new basix(page_size, page_size, cache_size, outFilename);
-      //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+      //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+      ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_ROCKSDB) {
-      //   rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
-      //   rdb_options.write_buffer_size = 67108864; // 64MB
-      //   rdb_options.max_write_buffer_number = 3;
-      //   rdb_options.target_file_size_base = 67108864; // 64MB
-      //   rdb_options.max_background_compactions = 4;
-      //   rdb_options.level0_file_num_compaction_trigger = 8;
-      //   rdb_options.level0_slowdown_writes_trigger = 17;
-      //   rdb_options.level0_stop_writes_trigger = 24;
-      //   rdb_options.num_levels = 4;
-      //   rdb_options.max_bytes_for_level_base = 536870912; // 512MB
-      //   rdb_options.max_bytes_for_level_multiplier = 8;
-      //   rdb_options.compression = rocksdb::CompressionType::kSnappyCompression;
       rdb_options.IncreaseParallelism();
-      rdb_options.OptimizeLevelStyleCompaction();
-      //rdb_options.SetCompressionType(DBCompressionType::Snappy);
+      //rdb_options.OptimizeLevelStyleCompaction();
+      //rdb_options.setCompressionType(CompressionType::kNoCompression);
+         rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
+         rdb_options.write_buffer_size = 67108864; // 64MB
+         rdb_options.max_write_buffer_number = 3;
+         rdb_options.target_file_size_base = 67108864; // 64MB
+         rdb_options.max_background_compactions = 4;
+         rdb_options.level0_file_num_compaction_trigger = 8;
+         rdb_options.level0_slowdown_writes_trigger = 17;
+         rdb_options.level0_stop_writes_trigger = 24;
+         rdb_options.num_levels = 4;
+         rdb_options.max_bytes_for_level_base = 536870912; // 512MB
+         rdb_options.max_bytes_for_level_multiplier = 8;
+         rdb_options.compression = rocksdb::CompressionType::kSnappyCompression;
       // create the DB if it's not already present
       rdb_options.create_if_missing = true;
       // open DB
