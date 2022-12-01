@@ -70,8 +70,8 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
-bfos *ix_obj;
-//basix *ix_obj;
+//bfos *ix_obj;
+basix *ix_obj;
 int start_at = 0;
 
 int kbhit() {
@@ -195,7 +195,8 @@ void insert_into_db(const char *utf8word, int word_len, const char *lang_code, c
 int max_word_len = 0;
 int words_generated = 0;
 int words_inserted = 0;
-int words_updated = 0;
+int words_updated1 = 0;
+int words_updated2 = 0;
 int num_words = 0;
 int num_phrases = 0;
 int num_grams = 0;
@@ -207,21 +208,22 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
       return;
     int16_t value_len;
     uint32_t count = 1;
-        char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
-        if (value != NULL) {
-            uint32_t *existing_count = (uint32_t *) value;
-            (*existing_count)++;
-            words_updated++;
-        } else {
-            words_inserted++;
-            total_word_lens += word_len;
-        }
-/*
+        // char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
+        // if (value != NULL) {
+        //     uint32_t *existing_count = (uint32_t *) value;
+        //     (*existing_count)++;
+        //     words_updated1++;
+        // } else {
+        //     words_inserted++;
+        //     total_word_lens += word_len;
+        // }
+
+#define _INSERT_THRESHOLD 15
     char *value = ix_obj->get(utf8word, (uint8_t) word_len, &value_len);
     if (value != NULL) {
         uint32_t *existing_count = (uint32_t *) value;
         (*existing_count)++;
-        words_updated++;
+        words_updated1++;
     } else {
         char old_word[word_len + 1];
         old_word[0] = '_';
@@ -229,22 +231,19 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
         value = ix_obj->put(old_word, (uint8_t) word_len + 1, (const char*) &count, 4, &value_len);
         if (value != NULL) {
             uint32_t *existing_count = (uint32_t *) value;
-            if ((*existing_count) > 39) {
-                count = 41;
+            if ((*existing_count) > _INSERT_THRESHOLD) {
+                count = _INSERT_THRESHOLD + 2;
                 value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
-                if (value != NULL) {
-                    existing_count = (uint32_t *) value;
-                    (*existing_count)++;
-                }
+                // TODO: delete old word
             } else {
                 (*existing_count)++;
             }
-            words_updated++;
+            words_updated2++;
         } else {
             words_inserted++;
             total_word_lens += word_len;
         }
-    }*/
+    }
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
@@ -267,7 +266,7 @@ void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_co
       //cout << "found: " << count_str << endl;
       count = atoi(count_str.c_str());
       count++;
-      words_updated++;
+      words_updated1++;
     } else {
       //cout << "not found: " << endl;
       count = 1;
@@ -685,9 +684,9 @@ void processPost(string& utf8body) {
             cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->getNumLevels()
                   << " w" << stats.pages_written << " r" << stats.pages_read << " m" << stats.total_cache_misses
                   << " f" << stats.cache_flush_count << " r" << stats.total_cache_req << " p" << stats.last_pages_to_flush << endl
-                  << "  " << words_generated << "=w" << num_words << "+p" << num_phrases << "+g" << num_grams
-                  << " i" << words_inserted << " l" << total_word_lens << " t"
-                  << duration<double>(steady_clock::now()-start).count() << endl;
+                  << " " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams
+                  << " i" << words_inserted << " u" << words_updated1 << " u" << words_updated2 //<< " l" << total_word_lens 
+                  << " t" << (double) ((double)((int) (duration<double>(steady_clock::now()-start).count() * 1000)) / 1000) << endl;
             //cout << ix_obj->size() << endl;
         } else {
             cout << line_count << " " << lines_processed
@@ -957,8 +956,8 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-      //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
-      ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+      //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+      ix_obj = new basix(page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_ROCKSDB) {
@@ -1020,7 +1019,7 @@ int main(int argc, const char** argv)
         cout << "Max word len: " << max_word_len << endl;
         cout << "Total words generated: " << words_generated << endl;
         cout << "Words inserted " << words_inserted << endl;
-        cout << "Words updated: " << words_updated << endl;
+        cout << "Words updated: " << words_updated1 << endl;
 
         delete ix_obj;
     }
