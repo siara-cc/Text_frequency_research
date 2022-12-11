@@ -208,16 +208,16 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
       return;
     int16_t value_len;
     uint32_t count = 1;
-        // char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
-        // if (value != NULL) {
-        //     uint32_t *existing_count = (uint32_t *) value;
-        //     (*existing_count)++;
-        //     words_updated1++;
-        // } else {
-        //     words_inserted++;
-        //     total_word_lens += word_len;
-        // }
-
+        char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
+        if (value != NULL) {
+            uint32_t *existing_count = (uint32_t *) value;
+            (*existing_count)++;
+            words_updated1++;
+        } else {
+            words_inserted++;
+            total_word_lens += word_len;
+        }
+/*
 #define _INSERT_THRESHOLD 15
     char *value = ix_obj->get(utf8word, (uint8_t) word_len, &value_len);
     if (value != NULL) {
@@ -244,6 +244,7 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
             total_word_lens += word_len;
         }
     }
+*/
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
