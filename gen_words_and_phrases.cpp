@@ -208,7 +208,7 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
       return;
     int16_t value_len;
     uint32_t count = 1;
-        char *value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
+        uint8_t *value = ix_obj->put((const uint8_t *) utf8word, (uint8_t) word_len, (const uint8_t*) &count, 4, &value_len);
         if (value != NULL) {
             uint32_t *existing_count = (uint32_t *) value;
             (*existing_count)++;
@@ -1009,10 +1009,10 @@ int main(int argc, const char** argv)
         ix_obj->printStats(ix_obj->size());
         ix_obj->printNumLevels();
         int16_t value_len = 0;
-        uint32_t *pcount = (uint32_t *) ix_obj->get("the", 3, &value_len);
+        uint32_t *pcount = (uint32_t *) ix_obj->get((uint8_t *) "the", 3, &value_len);
         if (pcount != NULL)
             cout << *pcount << " " << value_len << endl;
-        pcount = (uint32_t *) ix_obj->get("and", 3, &value_len);
+        pcount = (uint32_t *) ix_obj->get((uint8_t *) "and", 3, &value_len);
         if (pcount != NULL)
             cout << *pcount << " " << value_len << endl;
         ix_obj->setCurrentBlockRoot();
