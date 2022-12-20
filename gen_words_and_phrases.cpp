@@ -28,6 +28,7 @@ int GEN_SQL = 0;
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include "../index_research/src/stager.h"
 #include "../index_research/src/basix.h"
 #include "../index_research/src/bfos.h"
 
@@ -71,7 +72,8 @@ sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
 //bfos *ix_obj;
-basix *ix_obj;
+//basix *ix_obj;
+stager *ix_obj;
 int start_at = 0;
 
 int kbhit() {
@@ -957,8 +959,9 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
+      ix_obj = new stager(outFilename, cache_size);
       //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
-      ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+      //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_ROCKSDB) {
@@ -1015,8 +1018,6 @@ int main(int argc, const char** argv)
         pcount = (uint32_t *) ix_obj->get((uint8_t *) "and", 3, &value_len);
         if (pcount != NULL)
             cout << *pcount << " " << value_len << endl;
-        ix_obj->setCurrentBlockRoot();
-        cout << "Root filled size: " << ix_obj->filledSize() << endl;
         cout << "Max word len: " << max_word_len << endl;
         cout << "Total words generated: " << words_generated << endl;
         cout << "Words inserted " << words_inserted << endl;
