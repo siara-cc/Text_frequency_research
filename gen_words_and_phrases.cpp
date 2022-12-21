@@ -692,7 +692,7 @@ void processPost(string& utf8body) {
                   << " t" << (double) ((double)((int) (duration<double>(steady_clock::now()-start).count() * 1000)) / 1000) << endl;
             //cout << ix_obj->size() << endl;
         } else {
-            cout << line_count << " " << lines_processed
+            cout << line_count << " " << lines_processed << " "
                 << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
                 << words_inserted << " " << total_word_lens << " " 
                 << duration<double>(steady_clock::now()-start).count() << endl;
@@ -884,8 +884,10 @@ int main(int argc, const char** argv)
     const int page_size = atoi(argv[3]);
     const char* const outFilename = argv[4];
     cout << "Csz: " << cache_size << ", pgsz: " << page_size << endl;
-    if (argc > 5)
+    if (argc > 5) {
        start_at = atoi(argv[5]);
+       lines_processed = start_at;
+    }
 
     if (INSERT_INTO_SQLITE) {
         char cmd_str[100];
