@@ -8,9 +8,9 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 1;
+int INSERT_INTO_IDX = 0;
 int INSERT_INTO_SQLITE = 0;
-int INSERT_INTO_ROCKSDB = 0;
+int INSERT_INTO_ROCKSDB = 1;
 int GEN_SQL = 0;
 
 #include <stdio.h>     // fprintf
@@ -39,6 +39,8 @@ int GEN_SQL = 0;
 #include "rocksdb/db.h"
 #include "rocksdb/slice.h"
 #include "rocksdb/options.h"
+#include "rocksdb/cache.h"
+#include "rocksdb/table.h"
 #include "rocksdb/advanced_options.h"
 
 using ROCKSDB_NAMESPACE::DB;
@@ -967,21 +969,25 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_ROCKSDB) {
-      rdb_options.IncreaseParallelism();
+      //rdb_options.IncreaseParallelism();
       //rdb_options.OptimizeLevelStyleCompaction();
       //rdb_options.setCompressionType(CompressionType::kNoCompression);
+         rocksdb::BlockBasedTableOptions table_options;
+         table_options.enable_index_compression = false;
+         table_options.block_cache = rocksdb::NewLRUCache(320 * 1024 * 1024LL);
+         rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
          rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
-         rdb_options.write_buffer_size = 67108864; // 64MB
+         rdb_options.write_buffer_size = 320 * 1024 * 1024LL;
          rdb_options.max_write_buffer_number = 3;
-         rdb_options.target_file_size_base = 67108864; // 64MB
+         rdb_options.target_file_size_base = 320 * 1024 * 1024LL;
          rdb_options.max_background_compactions = 4;
          rdb_options.level0_file_num_compaction_trigger = 8;
          rdb_options.level0_slowdown_writes_trigger = 17;
          rdb_options.level0_stop_writes_trigger = 24;
          rdb_options.num_levels = 4;
-         rdb_options.max_bytes_for_level_base = 536870912; // 512MB
+         rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
          rdb_options.max_bytes_for_level_multiplier = 8;
-         rdb_options.compression = rocksdb::CompressionType::kSnappyCompression;
+         rdb_options.compression = rocksdb::CompressionType::kNoCompression;
       // create the DB if it's not already present
       rdb_options.create_if_missing = true;
       // open DB
