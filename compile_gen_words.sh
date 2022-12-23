@@ -26,3 +26,4 @@ COMP_OPTS="-O3 -std=c++17"
 g++ ${COMP_OPTS} -L/usr/local/lib -I. -Imisc -I../mimalloc/include -I/usr/local/include -I../fasttext/src gen_words_and_phrases.cpp sqlite3.o /usr/local/lib/libzstd.a ../fasttext/libfasttext.a ../index_research/src/basix.cpp ../index_research/src/bfos.cpp ../index_research/src/univix_util.cpp /usr/local/lib/librocksdb.a -lpthread -ldl -llz4 -lbz2 -lzstd -lz -lsnappy
 #-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -ljemalloc
 
+# screen sh -c './a.out RC_2013-04.zst 5000 4096 rocksdb >> logs/aws_m6gd/rocksdb_320mb_22dec.log 2>>fail.log '
