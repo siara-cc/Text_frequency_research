@@ -1039,7 +1039,7 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_WT) {
-        wiredtiger_open("./wt_word_freq/", NULL, "create,cache_size=100MB,log=(enabled=true,remove=false),extensions=[/usr/local/lib/libwiredtiger_snappy.so]", &wt_conn);
+        wiredtiger_open("./wt_word_freq/", NULL, "create,extensions=[/usr/local/lib/libwiredtiger_snappy.so]", &wt_conn);
         wt_conn->open_session(wt_conn, NULL, NULL, &wt_session);
         wt_session->create(wt_session, "table:word_freq", "type=lsm,key_format=S,value_format=I,prefix_compression=true,block_compressor=snappy");
         wt_session->open_cursor(wt_session, "table:word_freq", NULL, NULL, &wt_cursor);
