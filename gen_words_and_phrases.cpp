@@ -10,7 +10,8 @@
 
 int INSERT_INTO_IDX = 0;
 int INSERT_INTO_SQLITE = 0;
-int INSERT_INTO_ROCKSDB = 1;
+int INSERT_INTO_ROCKSDB = 0;
+int INSERT_INTO_WT = 1;
 int GEN_SQL = 0;
 
 #include <stdio.h>     // fprintf
@@ -42,6 +43,8 @@ int GEN_SQL = 0;
 #include "rocksdb/cache.h"
 #include "rocksdb/table.h"
 #include "rocksdb/advanced_options.h"
+
+#include "wiredtiger.h"
 
 using ROCKSDB_NAMESPACE::DB;
 using ROCKSDB_NAMESPACE::Options;
@@ -286,6 +289,44 @@ void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_co
       max_word_len = word_len;
 }
 
+WT_CONNECTION *wt_conn;
+WT_CURSOR *wt_cursor;
+WT_SESSION *wt_session;
+void insert_into_wt(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
+    //cout << "[" << utf8word << "]" << endl;
+    //return;
+    if (!INSERT_INTO_WT)
+      return;
+    int16_t value_len;
+    uint32_t count = 1;
+    char key[400];
+    string count_str("1");
+    strcpy(key, lang_code);
+    strcat(key, " ");
+    strcat(key, utf8word);
+    //cout << "Key: " << key << endl;
+    wt_cursor->set_key(wt_cursor, key);
+    if (wt_cursor->search(wt_cursor) == 0) {
+      //cout << "found: " << count_str << endl;
+      wt_cursor->get_value(wt_cursor, &count);
+      count++;
+      wt_cursor->set_value(wt_cursor, count);
+      wt_cursor->update(wt_cursor);
+      words_updated1++;
+    } else {
+      //cout << "not found: " << endl;
+      count = 1;
+      words_inserted++;
+      total_word_lens += word_len;
+      wt_cursor->set_value(wt_cursor, count);
+      wt_cursor->insert(wt_cursor);
+    }
+    wt_cursor->reset(wt_cursor);
+    //cout << "Put complete " << endl;
+    if (word_len > max_word_len)
+      max_word_len = word_len;
+}
+
 void output_sql(string& utf8word, int len, const char *lang_code, const char *is_word, const char *source) {
     if (!GEN_SQL)
       return;
@@ -329,6 +370,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_rocksdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    insert_into_wt(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     output_sql(utf8word, utf8word.length(), lang_code, is_word, "r");
     if (is_word[0] == 'y') {
         size_t spc_loc = utf8word.find(' ');
@@ -337,6 +379,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
             insert_into_db(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_idx(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_rocksdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
+            insert_into_wt(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             output_sql(word_with_spc, word_with_spc.length(), lang_code, "n", "r");
         }
     }
@@ -995,6 +1038,13 @@ int main(int argc, const char** argv)
       //assert(s.ok());
     }
 
+    if (INSERT_INTO_WT) {
+        wiredtiger_open("./wt_word_freq/", NULL, "create,cache_size=100MB,log=(enabled=true,remove=false),extensions=[/usr/local/lib/libwiredtiger_snappy.so]", &wt_conn);
+        wt_conn->open_session(wt_conn, NULL, NULL, &wt_session);
+        wt_session->create(wt_session, "table:word_freq", "type=lsm,key_format=S,value_format=I,prefix_compression=true,block_compressor=snappy");
+        wt_session->open_cursor(wt_session, "table:word_freq", NULL, NULL, &wt_cursor);
+    }
+
     start = steady_clock::now();
     decompressFile_orDie(inFilename);
 
@@ -1036,6 +1086,27 @@ int main(int argc, const char** argv)
 
     if (INSERT_INTO_ROCKSDB)
       delete rocksdb1;
+
+    if (INSERT_INTO_WT) {
+      wt_cursor->set_key(wt_cursor, "en the ");
+      if (wt_cursor->search(wt_cursor) == 0) {
+          uint32_t count = 0;
+          wt_cursor->get_value(wt_cursor, &count);
+            cout << count << endl;
+      }
+      wt_cursor->set_key(wt_cursor, "en and ");
+      if (wt_cursor->search(wt_cursor) == 0) {
+          uint32_t count = 0;
+          wt_cursor->get_value(wt_cursor, &count);
+            cout << count << endl;
+      }
+        cout << "Max word len: " << max_word_len << endl;
+        cout << "Total words generated: " << words_generated << endl;
+        cout << "Words inserted " << words_inserted << endl;
+        cout << "Words updated: " << words_updated1 << endl;
+        wt_cursor->close(wt_cursor);
+        wt_conn->close(wt_conn, NULL);
+    }
 
     //pid_t pid = getpid();
     //rusage_info_current rusage;
