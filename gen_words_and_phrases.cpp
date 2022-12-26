@@ -8,10 +8,10 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 0;
+int INSERT_INTO_IDX = 1;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_ROCKSDB = 0;
-int INSERT_INTO_WT = 1;
+int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
 #include <stdio.h>     // fprintf
