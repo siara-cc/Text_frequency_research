@@ -29,6 +29,7 @@ int GEN_SQL = 0;
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #include "../index_research/src/stager.h"
 #include "../index_research/src/basix.h"
 #include "../index_research/src/bfos.h"
@@ -44,7 +45,7 @@ int GEN_SQL = 0;
 #include "rocksdb/table.h"
 #include "rocksdb/advanced_options.h"
 
-#include "wiredtiger.h"
+//\#include "wiredtiger.h"
 
 using ROCKSDB_NAMESPACE::DB;
 using ROCKSDB_NAMESPACE::Options;
@@ -288,7 +289,7 @@ void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_co
     if (word_len > max_word_len)
       max_word_len = word_len;
 }
-
+/*
 WT_CONNECTION *wt_conn;
 WT_CURSOR *wt_cursor;
 WT_SESSION *wt_session;
@@ -326,7 +327,7 @@ void insert_into_wt(const char *utf8word, int word_len, const char *lang_code, c
     if (word_len > max_word_len)
       max_word_len = word_len;
 }
-
+*/
 void output_sql(string& utf8word, int len, const char *lang_code, const char *is_word, const char *source) {
     if (!GEN_SQL)
       return;
@@ -370,7 +371,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_rocksdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
-    insert_into_wt(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    //insert_into_wt(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     output_sql(utf8word, utf8word.length(), lang_code, is_word, "r");
     if (is_word[0] == 'y') {
         size_t spc_loc = utf8word.find(' ');
@@ -379,7 +380,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
             insert_into_db(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_idx(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_rocksdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
-            insert_into_wt(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
+            //insert_into_wt(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             output_sql(word_with_spc, word_with_spc.length(), lang_code, "n", "r");
         }
     }
@@ -1012,39 +1013,40 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_ROCKSDB) {
-      //rdb_options.IncreaseParallelism();
-      //rdb_options.OptimizeLevelStyleCompaction();
-      //rdb_options.setCompressionType(CompressionType::kNoCompression);
+      rdb_options.IncreaseParallelism();
+      rdb_options.OptimizeLevelStyleCompaction();
+/*      //rdb_options.setCompressionType(CompressionType::kNoCompression);
          rocksdb::BlockBasedTableOptions table_options;
          table_options.enable_index_compression = false;
-         table_options.block_cache = rocksdb::NewLRUCache(320 * 1024 * 1024LL);
+         table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
          rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
          rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
-         rdb_options.write_buffer_size = 320 * 1024 * 1024LL;
+         rdb_options.write_buffer_size = 64 * 1024 * 1024LL;
          rdb_options.max_write_buffer_number = 3;
-         rdb_options.target_file_size_base = 320 * 1024 * 1024LL;
+         rdb_options.target_file_size_base = 64 * 1024 * 1024LL;
          rdb_options.max_background_compactions = 4;
          rdb_options.level0_file_num_compaction_trigger = 8;
-         rdb_options.level0_slowdown_writes_trigger = 17;
-         rdb_options.level0_stop_writes_trigger = 24;
+         rdb_options.level0_slowdown_writes_trigger = -1; // 17;
+         rdb_options.level0_stop_writes_trigger = 36;
          rdb_options.num_levels = 4;
          rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
          rdb_options.max_bytes_for_level_multiplier = 8;
          rdb_options.compression = rocksdb::CompressionType::kNoCompression;
+*/
       // create the DB if it's not already present
       rdb_options.create_if_missing = true;
       // open DB
       Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
       //assert(s.ok());
     }
-
+/*
     if (INSERT_INTO_WT) {
         wiredtiger_open("./wt_word_freq/", NULL, "create,cache_size=320m,extensions=[/usr/local/lib64/libwiredtiger_snappy.so]", &wt_conn);
         wt_conn->open_session(wt_conn, NULL, NULL, &wt_session);
         wt_session->create(wt_session, "table:word_freq", "type=lsm,key_format=S,value_format=I,block_compressor=snappy,lsm=(chunk_size=64m)");
         wt_session->open_cursor(wt_session, "table:word_freq", NULL, NULL, &wt_cursor);
     }
-
+*/
     start = steady_clock::now();
     decompressFile_orDie(inFilename);
 
@@ -1086,7 +1088,7 @@ int main(int argc, const char** argv)
 
     if (INSERT_INTO_ROCKSDB)
       delete rocksdb1;
-
+/*
     if (INSERT_INTO_WT) {
       wt_cursor->set_key(wt_cursor, "en the ");
       if (wt_cursor->search(wt_cursor) == 0) {
@@ -1107,7 +1109,7 @@ int main(int argc, const char** argv)
         wt_cursor->close(wt_cursor);
         wt_conn->close(wt_conn, NULL);
     }
-
+*/
     //pid_t pid = getpid();
     //rusage_info_current rusage;
     //if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
@@ -1115,6 +1117,16 @@ int main(int argc, const char** argv)
     //    cout << rusage.ri_diskio_bytesread << endl;
     //    cout << rusage.ri_diskio_byteswritten << endl;
     //}
+
+    char cmd[100];
+    sprintf(cmd, "cat /proc/%d/io", getpid());
+    system(cmd);
+    struct rusage ru;
+    if (getrusage(RUSAGE_SELF, &ru) == 0)
+    {
+        cout << ru.ru_inblock << endl;
+        cout << ru.ru_oublock << endl;
+    }
 
     return 0;
 
