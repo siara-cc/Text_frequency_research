@@ -34,7 +34,10 @@ int GEN_SQL = 0;
 #include "../index_research/src/basix.h"
 #include "../index_research/src/bfos.h"
 
-//#include <libproc.h>
+#if defined(__APPLE__)
+#include <libproc.h>
+#endif
+
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -1110,16 +1113,20 @@ int main(int argc, const char** argv)
         wt_conn->close(wt_conn, NULL);
     }
 */
-    //pid_t pid = getpid();
-    //rusage_info_current rusage;
-    //if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
-    //{
-    //    cout << rusage.ri_diskio_bytesread << endl;
-    //    cout << rusage.ri_diskio_byteswritten << endl;
-    //}
 
     char cmd[100];
-    sprintf(cmd, "cat /proc/%d/io", getpid());
+    pid_t pid = getpid();
+    sprintf(cmd, "ps -p %d -o oublk -o inblk", pid);
+    system(cmd);
+#if defined(__APPLE__)
+    rusage_info_current rusage;
+    if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
+    {
+       cout << rusage.ri_diskio_bytesread << endl;
+       cout << rusage.ri_diskio_byteswritten << endl;
+    }
+#else
+    sprintf(cmd, "cat /proc/%d/io", pid);
     system(cmd);
     struct rusage ru;
     if (getrusage(RUSAGE_SELF, &ru) == 0)
@@ -1127,6 +1134,7 @@ int main(int argc, const char** argv)
         cout << ru.ru_inblock << endl;
         cout << ru.ru_oublock << endl;
     }
+#endif
 
     return 0;
 
