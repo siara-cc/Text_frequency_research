@@ -10,6 +10,7 @@
 
 int INSERT_INTO_IDX = 1;
 int INSERT_INTO_SQLITE = 0;
+int INSERT_INTO_LMDB = 0;
 int INSERT_INTO_ROCKSDB = 0;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
@@ -48,6 +49,8 @@ int GEN_SQL = 0;
 #include "rocksdb/table.h"
 #include "rocksdb/advanced_options.h"
 
+#include "lmdb.h"
+
 //\#include "wiredtiger.h"
 
 using ROCKSDB_NAMESPACE::DB;
@@ -65,6 +68,13 @@ using namespace rocksdb;
 std::string kDBPath = "./rocksdb_word_freq";
 DB* rocksdb1;
 Options rdb_options;
+
+// LMDB
+MDB_env *env;
+MDB_dbi dbi;
+MDB_val mdb_key, mdb_data;
+MDB_txn *txn;
+MDB_cursor *cursor;
 
 time_point<steady_clock> start;
 fasttext::FastText ftext;
@@ -260,6 +270,50 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
         max_word_len = word_len;
 }
 
+void insert_into_lmdb(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
+    //cout << "[" << utf8word << "]" << endl;
+    //return;
+    if (!INSERT_INTO_LMDB)
+      return;
+    int16_t value_len;
+    uint32_t count = 1;
+    char key[400];
+    string count_str("1");
+    strcpy(key, lang_code);
+    strcat(key, " ");
+    strcat(key, utf8word);
+    //cout << "Key: " << key << endl;
+    mdb_key.mv_size = strlen(key);
+    mdb_key.mv_data = key;
+    rc = mdb_get(txn, dbi, &mdb_key, &mdb_data);
+    if (rc != 0 && rc != MDB_NOTFOUND) {
+        fprintf(stderr, "mdb_get: (%d) %s\n", rc, mdb_strerror(rc));
+        return;
+    }
+    if (rc == 0) {
+      //cout << "found: " << count_str << endl;
+      count = *((uint32_t *) mdb_data.mv_data);
+      count++;
+      words_updated1++;
+    } else {
+      //cout << "not found: " << endl;
+      count = 1;
+      words_inserted++;
+      total_word_lens += word_len;
+    }
+    count_str = std::to_string(count);
+    mdb_data.mv_size = sizeof(uint32_t);
+    mdb_data.mv_data = &count;
+    rc = mdb_put(txn, dbi, &mdb_key, &mdb_data, 0);
+    if (rc) {
+        fprintf(stderr, "mdb_put: (%d) %s\n", rc, mdb_strerror(rc));
+        return;
+    }
+    //cout << "Put complete " << endl;
+    if (word_len > max_word_len)
+      max_word_len = word_len;
+}
+
 void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
     //cout << "[" << utf8word << "]" << endl;
     //return;
@@ -373,6 +427,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     string utf8word = myconv.to_bytes(word);
     insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    insert_into_lmdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_rocksdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     //insert_into_wt(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     output_sql(utf8word, utf8word.length(), lang_code, is_word, "r");
@@ -382,6 +437,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
             string word_with_spc = utf8word.substr(0, spc_loc+1);
             insert_into_db(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_idx(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
+            insert_into_lmdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_rocksdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             //insert_into_wt(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             output_sql(word_with_spc, word_with_spc.length(), lang_code, "n", "r");
@@ -757,6 +813,30 @@ void processPost(string& utf8body) {
                 return;
             }
         }
+        if (INSERT_INTO_LMDB) {
+            //mdb_cursor_close(cursor);
+            rc = mdb_txn_commit(txn);
+            if (rc) {
+                fprintf(stderr, "mdb_txn_commit: (%d) %s\n", rc, mdb_strerror(rc));
+                return;
+            }
+            mdb_dbi_close(env, dbi);
+            rc = mdb_txn_begin(env, NULL, 0, &txn);
+            if (rc) {
+                fprintf(stderr, "mdb_txn_begin: (%d) %s\n", rc, mdb_strerror(rc));
+                return;
+            }
+            rc = mdb_dbi_open(txn, NULL, 0, &dbi);
+            if (rc) {
+                fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+                return;
+            }
+            // rc = mdb_cursor_open(txn, dbi, &cursor);
+            // if (rc) {
+            //     fprintf(stderr, "mdb_cursor_renew: (%d) %s\n", rc, mdb_strerror(rc));
+            //     return;
+            // }
+        }
     }
 
     //if (utf8body.find("hey y’all, i’m georgia!") != string::npos)
@@ -1010,9 +1090,42 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-      ix_obj = new stager(outFilename, cache_size);
-      //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
-      //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+        ix_obj = new stager(outFilename, cache_size);
+        //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+        //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+    }
+
+    if (INSERT_INTO_LMDB) {
+        rc = mdb_env_create(&env);
+        if (rc) {
+            fprintf(stderr, "mdb_env_create: (%d) %s\n", rc, mdb_strerror(rc));
+            return 1;
+        }
+        rc = mdb_env_open(env, "./lmdb_word_freq", MDB_CREATE, 0664);
+        if (rc) {
+            fprintf(stderr, "mdb_env_open: (%d) %s\n", rc, mdb_strerror(rc));
+            return 1;
+        }
+        rc = mdb_env_set_mapsize(env, 40000000000UL);
+        if (rc) {
+            fprintf(stderr, "mdb_env_set_mapsize: (%d) %s\n", rc, mdb_strerror(rc));
+            return 1;
+        }
+        rc = mdb_txn_begin(env, NULL, 0, &txn);
+        if (rc) {
+            fprintf(stderr, "mdb_txn_begin: (%d) %s\n", rc, mdb_strerror(rc));
+            return 1;
+        }
+        rc = mdb_dbi_open(txn, NULL, 0, &dbi);
+        if (rc) {
+            fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+            return 1;
+        }
+        // rc = mdb_cursor_open(txn, dbi, &cursor);
+        // if (rc) {
+        //     fprintf(stderr, "mdb_cursor_open: (%d) %s\n", rc, mdb_strerror(rc));
+        //     return 1;
+        // }
     }
 
     if (INSERT_INTO_ROCKSDB) {
@@ -1091,6 +1204,18 @@ int main(int argc, const char** argv)
 
     if (INSERT_INTO_ROCKSDB)
       delete rocksdb1;
+
+    if (INSERT_INTO_LMDB) {
+        //mdb_cursor_close(cursor);
+        rc = mdb_txn_commit(txn);
+        if (rc) {
+            fprintf(stderr, "mdb_txn_commit: (%d) %s\n", rc, mdb_strerror(rc));
+            return 1;
+        }
+        mdb_dbi_close(env, dbi);
+        mdb_env_close(env);
+    }
+
 /*
     if (INSERT_INTO_WT) {
       wt_cursor->set_key(wt_cursor, "en the ");
