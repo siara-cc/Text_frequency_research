@@ -1,0 +1,26 @@
+Csz: 15000, pgsz: 4096
+File page count: 15000
+File page count: 1023405
+10988 10000 60 4 w14535 r213814 m187281 f101 r3096793 p500
+ 1502009=280567+736357+547318 i394913 u1325168 u0 t12.397
+Total lines processed: 15125
+Block Count:0, 1
+Avg Block Count:591205
+Avg Max Count:0, 0, 60
+Block Count:39, 5401
+Avg Block Count:93
+Avg Max Count:169, 142, 57
+Level Count:3
+Level Count:4
+3467805 5
+1870937 5
+Max word len: 60
+Total words generated: 2251729
+Words inserted 591205
+Words updated: 1987479
+total_cache_requests:  0
+total_cache_misses:  0
+cache_flush_count:  0
+total_cache_requests:  4921737
+total_cache_misses:  293492
+cache_flush_count:  142
