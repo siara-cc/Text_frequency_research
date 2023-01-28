@@ -229,43 +229,20 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
       return;
     int16_t value_len;
     uint32_t count = 1;
-        uint8_t *value = ix_obj->put((const uint8_t *) utf8word, (uint8_t) word_len, (const uint8_t*) &count, 4, &value_len);
-        if (value != NULL) {
-            uint32_t *existing_count = (uint32_t *) value;
-            (*existing_count)++;
-            words_updated1++;
-        } else {
-            words_inserted++;
-            total_word_lens += word_len;
-        }
-/*
-#define _INSERT_THRESHOLD 15
-    char *value = ix_obj->get(utf8word, (uint8_t) word_len, &value_len);
+    char key[400];
+    strcpy(key, lang_code);
+    strcat(key, " ");
+    strcat(key, utf8word);
+    uint8_t *value = ix_obj->get((const uint8_t *) utf8word, (uint8_t) word_len, &value_len);
     if (value != NULL) {
-        uint32_t *existing_count = (uint32_t *) value;
-        (*existing_count)++;
+        memcpy(&count, value, sizeof(uint32_t));
+        count++;
         words_updated1++;
     } else {
-        char old_word[word_len + 1];
-        old_word[0] = '_';
-        strncpy(old_word + 1, utf8word, word_len);
-        value = ix_obj->put(old_word, (uint8_t) word_len + 1, (const char*) &count, 4, &value_len);
-        if (value != NULL) {
-            uint32_t *existing_count = (uint32_t *) value;
-            if ((*existing_count) > _INSERT_THRESHOLD) {
-                count = _INSERT_THRESHOLD + 2;
-                value = ix_obj->put(utf8word, (uint8_t) word_len, (const char*) &count, 4, &value_len);
-                // TODO: delete old word
-            } else {
-                (*existing_count)++;
-            }
-            words_updated2++;
-        } else {
-            words_inserted++;
-            total_word_lens += word_len;
-        }
+        words_inserted++;
+        total_word_lens += word_len;
     }
-*/
+    value = ix_obj->put((const uint8_t *) utf8word, (uint8_t) word_len, (const uint8_t*) &count, 4, &value_len);
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
