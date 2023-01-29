@@ -1903,3 +1903,611 @@ write_bytes: 174619611136
 cancelled_write_bytes: 0
 146870576
 341053928
+Csz: 2, pgsz: 4096
+File page count: 128
+File page count: 122374
+File page count: 245195
+File page count: 246146
+File page count: 248413
+File page count: 248701
+File page count: 249527
+File page count: 249208
+File page count: 250216
+File page count: 249933
+File page count: 250694
+File page count: 250369
+Stg buf: 32mb, Idx1 buf: 32mb, Idx1+ buf: 16mb
+Idx1 entry count limit: 25 million, Idx2 buf: 32mb
+File page count: 36620
+6010946 6010000 59 4 w87092 r119267 m115833 f176 r1546278 p500
+ 1704023=319664+844902+610979 i676985 u1276131 u0 t50.885
+Total lines processed: 6019994
+Block Count:0, 1
+Avg Block Count:1361822 = 1361822 / 1
+Avg Max Count:0, 0, 60
+Block Count:101, 9345
+Avg Block Count:100 = 938603 / 9345
+Avg Max Count:186, 146, 60
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 13205308
+    estimated elements added: 13205296
+    current false positive rate: 0.000000
+    export size (bytes): 59906636
+    number bits set: 144287432
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24994694
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235967924
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24995014
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235970032
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24995440
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235972842
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24997464
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235986203
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996169
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235977654
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996727
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235981335
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996902
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235982495
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24997049
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235983461
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996143
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235977485
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996572
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235980313
+    is on disk: no
+Block Count:0, 53
+Avg Block Count:111 = 5904 / 53
+Avg Max Count:0, 185, 53
+BloomFilter
+    bits: 191701169
+    estimated elements: 10000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 23962647
+    elements added: 4631642
+    estimated elements added: 4626356
+    current false positive rate: 0.000000
+    export size (bytes): 23962667
+    number bits set: 51622165
+    is on disk: no
+Level Count:2
+Level Count:4
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:4
+6940001 4
+3758393 4
+Max word len: 60
+Total words generated: 3432321
+Words inserted 1361822
+Words updated: 2569974
+cache requests:  0, Misses: 0, Flush#: 0
+cache requests:  3212819, Misses: 244419, Flush#: 354
+cache requests:  2349918, Misses: 247816, Flush#: 131
+cache requests:  201741, Misses: 71573, Flush#: 0
+cache requests:  114594, Misses: 40670, Flush#: 0
+cache requests:  76629, Misses: 27523, Flush#: 0
+cache requests:  56913, Misses: 20343, Flush#: 0
+cache requests:  45706, Misses: 16257, Flush#: 0
+cache requests:  35676, Misses: 12910, Flush#: 0
+cache requests:  31554, Misses: 11099, Flush#: 0
+cache requests:  26541, Misses: 9307, Flush#: 0
+cache requests:  26619, Misses: 9053, Flush#: 0
+cache requests:  2009103, Misses: 413783, Flush#: 0
+OUBLK INBLK
+    -     -
+rchar: 6202844130
+wchar: 1120385208
+syscr: 1181776
+syscw: 245086
+read_bytes: 2627170304
+write_bytes: 1111613440
+cancelled_write_bytes: 0
+5130032
+2171120
+Csz: 2, pgsz: 4096
+File page count: 128
+File page count: 131819
+stager.ix1.1
+File page count: 245195
+stager.ix1.2
+File page count: 246146
+stager.ix1.3
+File page count: 248413
+stager.ix1.4
+File page count: 248701
+stager.ix1.5
+File page count: 249527
+stager.ix1.6
+File page count: 249208
+stager.ix1.7
+File page count: 250216
+stager.ix1.8
+File page count: 249933
+stager.ix1.9
+File page count: 250694
+stager.ix1.10
+File page count: 250369
+Stg buf: 32mb, Idx1 buf: 32mb, Idx1+ buf: 16mb
+Idx1 entry count limit: 25 million, Idx2 buf: 32mb
+File page count: 36672
+6010946 6010000 60 4 w79182 r274684 m268794 f173 r2680880 p500
+ 1704023=319664+844902+610979 i662920 u1290196 u0 t12.288
+6021948 6020000 60 4 w170888 r560452 m554771 f373 r5638137 p500
+ 3433363=642575+1693850+1241196 i1325623 u2607343 u0 t5.748
+Idx1+ positiv: 498423 995370 18803 11771 7826 5821 4658 4117 3628 3126 3361 185212 
+Idx1+ lookups: 498423 995370 18779 11751 7811 5800 4642 4099 3602 3108 3345 185212 
+6032955 6030000 60 4 w266650 r691315 m687825 f562 r7311158 p500
+ 5173126=965773+2555371+1867622 i2018301 u3908054 u0 t53.038
+6043988 6040000 60 4 w353757 r810233 m810677 f729 r8784922 p500
+ 6894420=1286077+3402144+2493270 i2701223 u5196424 u0 t36.373
+6054964 6050000 60 4 w454107 r942448 m947538 f921 r10455953 p500
+ 8586714=1604086+4237983+3103529 i3377054 u6459567 u0 t38.947
+Idx1+ positiv: 1011259 1102031 103959 61824 43900 33809 27717 22863 20757 18065 18995 1051467 
+Idx1+ lookups: 1011259 1102031 103815 61690 43787 33704 27608 22740 20648 17957 18893 1051467 
+6065984 6060000 60 4 w548724 r1071003 m1080420 f1103 r12010693 p500
+ 10271335=1916294+5065738+3717506 i4045086 u7720338 u0 t43.316
+6077100 6070000 61 4 w643447 r1200471 m1214066 f1285 r13535846 p500
+ 11949377=2229666+5890921+4326735 i4703337 u8983965 u0 t28.675
+Idx1+ positiv: 1522658 1219803 185172 109911 79095 60126 50123 41499 37080 32661 34199 1904313 
+Idx1+ lookups: 1522658 1219801 184923 109666 78896 59927 49914 41291 36887 32437 33996 1904313 
+6088083 6080000 61 4 w746791 r1339758 m1357812 f1484 r15162175 p500
+ 13633066=2543236+6716833+4940367 i5373565 u10241818 u0 t30.432
+6099028 6090000 61 4 w850549 r1482806 m1505323 f1684 r16807733 p500
+ 15283229=2848979+7527165+5542479 i6030606 u11474064 u0 t34.391
+6109961 6100000 61 4 w948638 r1619770 m1646335 f1874 r18318001 p500
+ 16951898=3159051+8349063+6148058 i6697329 u12718103 u0 t38.698
+Idx1+ positiv: 2034284 1347242 265115 158004 114181 86558 72824 60042 53138 47390 48023 2767063 
+Idx1+ lookups: 2034284 1347238 264776 157656 113874 86266 72511 59743 52874 47069 47743 2767063 
+6120929 6110000 62 4 w1057104 r1768190 m1799201 f2083 r19957531 p500
+ 18635557=3472202+9177017+6760357 i7368732 u13974769 u0 t28.603
+6131862 6120000 62 4 w1165257 r1917839 m1953222 f2292 r21578638 p500
+ 20305963=3783178+9999451+7366612 i8033118 u15222963 u0 t31.852
+Idx1+ positiv: 2549197 1486795 342373 205700 148419 113087 94907 78887 68985 62492 61478 3615918 
+Idx1+ lookups: 2549196 1486786 341933 205258 148013 112709 94500 78487 68655 62084 61120 3615918 
+6142848 6130000 62 4 w1270660 r2067400 m2106967 f2497 r23152013 p500
+ 21964728=4093293+10817598+7966199 i8693695 u16463241 u0 t39.107
+6153874 6140000 62 4 w1376027 r2216881 m2260531 f2701 r24698146 p500
+ 23631417=4400638+11637901+8573205 i9354784 u17710202 u0 t33.76
+6164800 6150000 62 4 w1497867 r2388339 m2436865 f2939 r26498891 p500
+ 25343842=4715898+12473739+9205028 i10035303 u18988841 u0 t27.813
+Idx1+ positiv: 3059602 1634053 417053 251285 181918 139982 116793 96938 84774 76597 76490 4461999 
+Idx1+ lookups: 3059600 1634040 416507 250770 181409 139518 116292 96445 84346 76104 76058 4461999 
+6175744 6160000 62 4 w1602072 r2538559 m2590982 f3142 r27986553 p500
+ 27005823=5024748+13288539+9811867 i10687560 u20239688 u0 t27.329
+6186744 6170000 62 4 w1715711 r2701182 m2758047 f3364 r29616810 p500
+ 28661538=5334821+14103822+10411186 i11340583 u21483416 u0 t46.781
+6197729 6180000 62 4 w1833653 r2869452 m2930748 f3594 r31279997 p500
+ 30338169=5646757+14924770+11024511 i12001540 u22741527 u0 t28.717
+Idx1+ positiv: 3570732 1785724 488711 295663 214684 165621 137447 114809 100236 90178 89917 5298852 
+Idx1+ lookups: 3570727 1785701 488059 295042 214081 165066 136844 114228 99737 89603 89404 5298852 
+6208695 6190000 62 4 w1948509 r3034095 m3099569 f3820 r32882364 p500
+ 31986033=5952889+15739931+11619072 i12651552 u23979015 u0 t28.071
+6219597 6200000 62 4 w2057314 r3194380 m3263793 f4036 r34404225 p500
+ 33650179=6260584+16557744+12226016 i13313350 u25222168 u0 t26.881
+Idx1+ positiv: 4077172 1948663 558383 339481 247342 191317 158025 132694 116032 104530 103813 6139463 
+Idx1+ lookups: 4077167 1948626 557609 338762 246636 190663 157341 132026 115452 103874 103222 6139463 
+6230585 6210000 71 4 w2181654 r3373020 m3446964 f4279 r36113690 p500
+ 35346324=6575703+17396563+12838001 i13987325 u26491317 u0 t50.785
+6241563 6220000 71 4 w2304365 r3553519 m3631706 f4520 r37783831 p500
+ 37076943=6895604+18244763+13471612 i14669319 u27789718 u0 t27.934
+6252515 6230000 71 4 w2430145 r3738490 m3821022 f4768 r39508656 p500
+ 38763449=7207055+19070282+14090186 i15332373 u29056929 u0 t31.346
+Idx1+ positiv: 4586146 2138693 625512 381501 278486 215608 177981 150492 130890 117646 117246 6954906 
+Idx1+ lookups: 4586140 2138631 624658 380692 277703 214860 177222 149736 130216 116919 116571 6954906 
+6263449 6240000 71 4 w2559636 r3975443 m4062083 f5032 r41626289 p500
+ 40455306=7521138+19897852+14710621 i15996423 u30329231 u0 t34.322
+6274431 6250000 71 4 w2671877 r4299767 m4387784 f5278 r44290052 p500
+ 42073960=7824734+20702000+15289183 i16636688 u31544448 u0 t7.037
+Idx1+ positiv: 5096157 3202592 637206 388692 283872 219901 181450 153494 133326 120014 119352 7098058 
+Idx1+ lookups: 5096150 3202523 636330 387870 283073 219138 180678 152719 132640 119278 118665 7098058 
+6285436 6260000 71 4 w2786293 r4630591 m4718741 f5531 r46984597 p500
+ 43711536=8131757+21514052+15877044 i17280229 u32777468 u0 t5.851
+6296434 6270000 71 4 w2915175 r4989807 m5077957 f5815 r49966288 p500
+ 45412489=8446699+22353391+16493626 i17948809 u34056358 u0 t6.049
+6307386 6280000 71 4 w3044898 r5346303 m5434453 f6101 r52937272 p500
+ 47114663=8761848+23190414+17113606 i18616199 u35337510 u0 t6.792
+Idx1+ positiv: 5608081 4453109 637206 388692 283872 219901 181450 153494 133326 120014 119352 7098058 
+Idx1+ lookups: 5608073 4453040 636330 387870 283073 219138 180678 152719 132640 119278 118665 7098058 
+6318401 6290000 71 4 w3157334 r5686815 m5774965 f6347 r55744153 p500
+ 48825305=9080522+24030993+17736066 i19291875 u36619885 u0 t5.982
+6329410 6300000 71 4 w3282848 r6030381 m6118531 f6625 r58648330 p500
+ 50466863=9383611+24838045+18335375 i19935284 u37855402 u0 t8.151
+6340447 6310000 71 4 w3393865 r6363864 m6452014 f6872 r61399291 p500
+ 52129357=9692550+25660969+18934561 i20593222 u39102169 u0 t5.662
+Idx1+ positiv: 6115689 5705669 637206 388692 283872 219901 181450 153494 133326 120014 119352 7098058 
+Idx1+ lookups: 6115679 5705600 636330 387870 283073 219138 180678 152719 132640 119278 118665 7098058 
+6351462 6320000 71 4 w3515050 r6699668 m6787818 f7141 r64212991 p500
+ 53747407=9996319+26456515+19520666 i21227177 u40321466 u0 t5.82
+6362476 6330000 71 4 w3625288 r7024512 m7112662 f7391 r66909778 p500
+ 55352333=10296526+27250102+20098936 i21861943 u41525523 u0 t5.427
+Idx1+ positiv: 6626743 6957820 637206 388692 283872 219901 181450 153494 133326 120014 119352 7098058 
+Idx1+ lookups: 6626732 6957751 636330 387870 283073 219138 180678 152719 132640 119278 118665 7098058 
+6373494 6340000 71 4 w3743125 r7356711 m7444861 f7652 r69690076 p500
+ 56966085=10597152+28047349+20681680 i22498994 u42737146 u0 t6.081
+6384455 6350000 71 4 w3864094 r7691544 m7779694 f7914 r72514069 p500
+ 58602579=10904277+28843990+21282149 i23138925 u43969676 u0 t5.871
+6395349 6360000 76 4 w3978839 r8021076 m8109226 f8171 r75274900 p500
+ 60243820=11210420+29649666+21879548 i23780798 u45207351 u0 t5.823
+Idx1+ positiv: 7137576 8204242 637206 388692 283872 219901 181450 153494 133326 120014 119352 7098058 
+Idx1+ lookups: 7137563 8204173 636330 387870 283073 219138 180678 152719 132640 119278 118665 7098058 
+6406362 6370000 76 4 w4089098 r8343427 m8431577 f8420 r77975437 p500
+ 61843036=11509512+30439782+22455710 i24410315 u46410459 u0 t6.389
+6417298 6380000 76 4 w4209937 r8683938 m8772088 f8684 r80864047 p500
+ 63495488=11817678+31251404+23057189 i25058713 u47654277 u0 t5.944
+6428290 6390000 76 4 w4320109 r9004861 m9093011 f8928 r83533387 p500
+ 65099460=12118393+32049211+23629525 i25695432 u48856678 u0 t7.19
+Idx1+ positiv: 7646488 9456999 637206 388692 283872 219901 181450 153494 133326 120014 119352 7098058 
+Idx1+ lookups: 7646474 9456930 636330 387870 283073 219138 180678 152719 132640 119278 118665 7098058 
+6439284 6400000 76 4 w4437357 r9331921 m9420071 f9188 r86288374 p500
+ 66702402=12416598+32836219+24213244 i26327026 u50060659 u0 t5.525
+Total lines processed: 6405888
+Block Count:0, 1
+Avg Block Count:26676981 = 26676981 / 1
+Avg Max Count:0, 0, 76
+Block Count:748, 95595
+Avg Block Count:100 = 9564527 / 95595
+Avg Max Count:182, 145, 76
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 22769835
+    estimated elements added: 22767813
+    current false positive rate: 0.000042
+    export size (bytes): 59906636
+    number bits set: 220819277
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24994694
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235967924
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24995014
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235970032
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24995440
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235972842
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24997464
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235986203
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996169
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235977654
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996727
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235981335
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996902
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235982495
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24997049
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235983461
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996143
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235977485
+    is on disk: no
+Block Count:0, 1
+Avg Block Count:0 = 0 / 1
+Avg Max Count:0, 0, 0
+BloomFilter
+    bits: 479252921
+    estimated elements: 25000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 59906616
+    elements added: 25000000
+    estimated elements added: 24996572
+    current false positive rate: 0.000100
+    export size (bytes): 59906636
+    number bits set: 235980313
+    is on disk: no
+Block Count:5, 446
+Avg Block Count:110 = 49415 / 446
+Avg Max Count:250, 175, 64
+BloomFilter
+    bits: 191701169
+    estimated elements: 10000000
+    number hashes: 13
+    max false positive rate: 0.000100
+    bloom length (8 bits): 23962647
+    elements added: 4681057
+    estimated elements added: 4675745
+    current false positive rate: 0.000000
+    export size (bytes): 23962667
+    number bits set: 52090545
+    is on disk: no
+Level Count:2
+Level Count:4
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:1
+Level Count:4
+7418430 4
+4019783 4
+Max word len: 76
+Total words generated: 67588736
+Words inserted 26676981
+Words updated: 50725932
+cache requests:  0, Misses: 0, Flush#: 0
+cache requests:  87837670, Misses: 9604515, Flush#: 9337
+cache requests:  45973537, Misses: 4975419, Flush#: 2614
+cache requests:  1902222, Misses: 673531, Flush#: 0
+cache requests:  1156662, Misses: 411186, Flush#: 0
+cache requests:  842373, Misses: 301690, Flush#: 0
+cache requests:  650640, Misses: 233070, Flush#: 0
+cache requests:  535329, Misses: 191775, Flush#: 0
+cache requests:  451272, Misses: 161666, Flush#: 0
+cache requests:  390693, Misses: 138604, Flush#: 0
+cache requests:  350946, Misses: 123964, Flush#: 0
+cache requests:  348198, Misses: 119390, Flush#: 0
+cache requests:  21278253, Misses: 4357116, Flush#: 0
+OUBLK INBLK
+    -     -
+rchar: 88489216223
+wchar: 23119128944
+syscr: 21262254
+syscw: 5615989
+read_bytes: 9512009728
+write_bytes: 21109305344
+cancelled_write_bytes: 0
+18575288
+41229112
