@@ -47,6 +47,7 @@ int GEN_SQL = 0;
 #include "rocksdb/options.h"
 #include "rocksdb/cache.h"
 #include "rocksdb/table.h"
+#include "rocksdb/rate_limiter.h"
 #include "rocksdb/advanced_options.h"
 
 #include "lmdb.h"
@@ -92,6 +93,7 @@ const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
 //bfos *ix_obj;
 //basix *ix_obj;
+//sqlite *ix_obj;
 stager *ix_obj;
 int start_at = 0;
 
@@ -233,7 +235,9 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
     strcpy(key, lang_code);
     strcat(key, " ");
     strcat(key, utf8word);
-    uint8_t *value = ix_obj->get((const uint8_t *) utf8word, (uint8_t) word_len, &value_len);
+    word_len++;
+    word_len += strlen(lang_code);
+    uint8_t *value = ix_obj->get((const uint8_t *) key, (uint8_t) word_len, &value_len);
     if (value != NULL) {
         memcpy(&count, value, sizeof(uint32_t));
         count++;
@@ -241,8 +245,9 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
     } else {
         words_inserted++;
         total_word_lens += word_len;
+        value_len = sizeof(uint32_t);
     }
-    value = ix_obj->put((const uint8_t *) utf8word, (uint8_t) word_len, (const uint8_t*) &count, 4, &value_len);
+    value = ix_obj->put((const uint8_t *) key, (uint8_t) word_len, (const uint8_t*) &count, 4, &value_len);
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
@@ -1070,6 +1075,7 @@ int main(int argc, const char** argv)
         ix_obj = new stager(outFilename, cache_size);
         //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
         //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+        //ix_obj = new sqlite(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
@@ -1128,6 +1134,7 @@ int main(int argc, const char** argv)
 */
       // create the DB if it's not already present
       rdb_options.create_if_missing = true;
+      rdb_options.rate_limiter = shared_ptr<RateLimiter>(NewGenericRateLimiter(2000000000L));
       // open DB
       Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
       //assert(s.ok());
@@ -1165,10 +1172,10 @@ int main(int argc, const char** argv)
         ix_obj->printStats(ix_obj->size());
         ix_obj->printNumLevels();
         int16_t value_len = 0;
-        uint32_t *pcount = (uint32_t *) ix_obj->get((uint8_t *) "the", 3, &value_len);
+        uint32_t *pcount = (uint32_t *) ix_obj->get((uint8_t *) "en the ", 7, &value_len);
         if (pcount != NULL)
             cout << *pcount << " " << value_len << endl;
-        pcount = (uint32_t *) ix_obj->get((uint8_t *) "and", 3, &value_len);
+        pcount = (uint32_t *) ix_obj->get((uint8_t *) "en and ", 7, &value_len);
         if (pcount != NULL)
             cout << *pcount << " " << value_len << endl;
         cout << "Max word len: " << max_word_len << endl;
@@ -1179,8 +1186,16 @@ int main(int argc, const char** argv)
         delete ix_obj;
     }
 
-    if (INSERT_INTO_ROCKSDB)
-      delete rocksdb1;
+    if (INSERT_INTO_ROCKSDB) {
+        string count_str;
+        Status s = rocksdb1->Get(ReadOptions(), "en the ", &count_str);
+        if (!s.IsNotFound())
+            cout << count_str << endl;
+        s = rocksdb1->Get(ReadOptions(), "en and ", &count_str);
+        if (!s.IsNotFound())
+            cout << count_str << endl;
+        delete rocksdb1;
+    }
 
     if (INSERT_INTO_LMDB) {
         //mdb_cursor_close(cursor);
