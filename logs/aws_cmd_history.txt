@@ -1,0 +1,201 @@
+top
+ls
+lsblk
+sudo mkfs -t xfs /dev/nvme1n1
+sudo mkdir /data
+sudo mount /dev/nvme1n1 /data
+df -h
+ls
+cd /data
+ls
+git clone https://github.com/Tencent/rapidjson/
+cd rapidjson/
+cmake .
+sudo make static install
+vi CMakeLists.txt 
+make
+ls build
+ls
+ls -lt | more
+ls bin
+vi library.json 
+sudo make install
+cd ../Text_frequency_research/
+sh compile_gen_words.sh 
+cd ..
+git clone https://github.com/siara-cc/bloom
+git clone https://github.com/lmdb/lmdb
+cd lmdb
+cd libraries/liblmdb/l
+cd libraries/liblmdb/
+ls
+vi Makefile 
+make
+cd ../Te
+cd /data/Text_frequency_research/
+sh compile_gen_words.sh 
+vi compile_gen_words.sh 
+sudo yum install libzstd-dev
+sudo yum install libzstd-static
+vi compile_gen_words.sh 
+sh compile_gen_words.sh 
+vi compile_gen_words.sh 
+sh compile_gen_words.sh 
+sudo yum install libbrotlienc
+sudo yum install libbrotlienc.amzn2.aarch64
+yum search brotli
+yum search brottli
+sudo yum update
+vi ../index_research/src/lru_cache.h
+sh compile_gen_words.sh 
+vi compile_gen_words.sh 
+sudo yum install bzip2 bzip2-devel
+sudo yum install zlib zlib-devel
+sudo yum install snappy snappy-devel
+sudo yum install lz4-devel
+sh compile_gen_words.sh 
+sudo yum install brotlienc brotlienc-devel
+sudo yum install brotli brotli-devel
+vi compile_gen_words.sh 
+sh compile_gen_words.sh 
+vi gen_words_and_phrases.cpp
+sh compile_gen_words.sh 
+ls
+screen sh -c './a.out RC_2013-04.zst 2 4096 stager > logs/aws4c_16m_rocks_default.log 2>rocks_err.log'
+bg
+disown -a
+ls
+vi rocks
+screen sh -c './a.out RC_2013-04.zst 2 4096 stager > logs/aws4c_16m_rocks_default.log 2>rocks_err.log'
+bg
+disown -a
+ps -ef | grep a.out
+exit
+ls
+git clone https://github.com/siara-cc/Text_frequency_research
+sudo yum groupinstall "Development Tools"
+sudo yum install cmake
+sudo yum install rapidjson
+sudo yum install zstd
+
+git clone https://github.com/siara-cc/Text_frequency_research
+git clone https://github.com/siara-cc/index_research
+git clone https://github.com/facebook/fasttext
+git clone https://github.com/facebookresearch/fasttext
+cd fasttext/
+ls
+vi Makefile 
+make opt fasttext-static
+yum search rapidjson
+yum search zstd
+yum install libzstd-static.aarch64
+sudo yum install libzstd-static.aarch64
+sudo yum install librocksdb-static.aarch64
+yum search rapidjson
+yum search rapid
+yum search rocksdb
+yum search rocks
+yum search Rapid
+cd ../Text_frequency_research/
+ls
+vi rdb_compile.sh
+sh rdb_compile.sh 
+cd ..
+ls
+mv * /data
+sudo chown arun /data
+sudo chown /data 
+sudo chown ec2-user /data
+mv * /data
+cd /data
+cd Text_frequency_research/
+sh rdb_compile.sh 
+make clean
+cd rocksdb-7.7.3/
+ls
+make clean
+cd ..
+sh rdb_compile.sh 
+ls
+ps -ef | grep a.out
+vi rocks_err.log 
+vi logs/aws4c_16m_rocks_default.log 
+rm -rf rocksdb_word_freq/
+top
+tail -f logs/aws4c_16m_rocks_default.log 
+top
+tail -f logs/aws4c_16m_rocks_default.log 
+cd rocksdb_word_freq/
+ls -lt =h
+ls -lt -h
+top
+ls -lt =h
+ls -lt -h
+top
+du -h -d 1
+tail -f logs/aws4
+cd ..
+tail -f logs/aws4
+
+tail -f logs/aws4
+tail -f logs/aws4c_16m_rocks_default.log 
+ps -ef | grep a.out
+kill -9 31939
+vi gen_words_and_phrases.cpp
+sh compile_gen_words.sh 
+SCREEN sh -c './a.out RC_2013-04.zst 2 4096 stager > logs/aws4c_16g_stagerx_32m_25mil_3.log' 2>stager_err.log'
+'
+SCREEN sh -c './a.out RC_2013-04.zst 2 4096 stager > logs/aws4c_16g_stagerx_32m_25mil_3.log 2>stager_err.log'
+ps -ef | grep a.out
+screen sh -c './a.out RC_2013-04.zst 2 4096 stager > logs/aws4c_16g_stagerx_32m_25mil_3.log 2>stager_err.log'
+bg
+disown -a
+top
+exit
+./reptyr 32133
+./reptyr 32132
+./reptyr 32131
+./reptyr 32130
+exit
+top
+cd /data
+cd Text_frequency_research/
+tail -f logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 
+sh compile_gen_words.sh 
+top
+kill 1057
+vi logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log
+screen sh -c './a.out RC_2013-04.zst 2 4096 stager 510000 >> logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 2>>rocks_err.log'
+bg
+disown -a
+exit
+to
+top
+cd /data/Text_frequency_research/
+tail -f logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 
+top
+kill 1559
+top
+vi logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 
+vi gen_words_and_phrases.cpp
+sh compile_gen_words.sh 
+screen sh -c './a.out RC_2013-04.zst 2 4096 stager 510000 >> logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 2>>rocks_err.log'
+bg
+disown -a
+exit
+top
+cd /data/Text_frequency_research/
+tail -f logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 
+top
+tail -f logs/aws_m6gd_4cpu/aws4c_16m_rocks_default.log 
+cd
+cd data
+cd /data
+cd reptyr/
+top]
+tp
+top
+./reptyr -T 2022
+sudo ./reptyr -T 2022
+top
+exit
