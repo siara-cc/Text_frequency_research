@@ -229,7 +229,7 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
     //return;
     if (!INSERT_INTO_IDX)
       return;
-    int16_t value_len;
+    int value_len;
     uint32_t count = 1;
     char key[400];
     strcpy(key, lang_code);
@@ -771,7 +771,7 @@ void processPost(string& utf8body) {
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX) {
             cache_stats stats = ix_obj->get_cache_stats();
-            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->getNumLevels()
+            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->get_num_levels()
                   << " w" << stats.pages_written << " r" << stats.pages_read << " m" << stats.total_cache_misses
                   << " f" << stats.cache_flush_count << " r" << stats.total_cache_req << " p" << stats.last_pages_to_flush << endl
                   << " " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams
@@ -966,7 +966,6 @@ static void decompressFile_orDie(const char* fname)
     free(buffIn);
     free(buffOut);
 }
- 
  
 int main(int argc, const char** argv)
 {
@@ -1169,9 +1168,9 @@ int main(int argc, const char** argv)
  
     cout << "Total lines processed: " << lines_processed << endl;
     if (INSERT_INTO_IDX) {
-        ix_obj->printStats(ix_obj->size());
-        ix_obj->printNumLevels();
-        int16_t value_len = 0;
+        ix_obj->print_stats(ix_obj->size());
+        ix_obj->print_num_levels();
+        int value_len = 0;
         uint32_t *pcount = (uint32_t *) ix_obj->get((uint8_t *) "en the ", 7, &value_len);
         if (pcount != NULL)
             cout << *pcount << " " << value_len << endl;
