@@ -31,9 +31,9 @@ int GEN_SQL = 0;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/resource.h>
-#include "../index_research/src/sqlite.h"
-//#include "../sqlite_blaster/src/sqlite_index_blaster.h"
 #include "../index_research/src/stager.h"
+#include "../index_research/src/basix.h"
+#include "../index_research/src/bfos.h"
 
 #if defined(__APPLE__)
 #include <libproc.h>
@@ -91,6 +91,8 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
+//bfos *ix_obj;
+//basix *ix_obj;
 //sqlite *ix_obj;
 stager *ix_obj;
 int start_at = 0;
@@ -137,15 +139,6 @@ void printPredictions(
   }
 }
 
-int max_word_len = 0;
-int words_generated = 0;
-int words_inserted = 0;
-int words_updated1 = 0;
-int words_updated2 = 0;
-int num_words = 0;
-int num_phrases = 0;
-int num_grams = 0;
-long total_word_lens = 0;
 void insert_into_db(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
 
     if (!INSERT_INTO_SQLITE)
@@ -165,66 +158,96 @@ void insert_into_db(const char *utf8word, int word_len, const char *lang_code, c
             //sqlite3_close(db);
             return;
         }
-        words_updated1++;
     } else {
-        sqlite3_reset(ins_word_freq_stmt);
-        sqlite3_bind_text(ins_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
-        sqlite3_bind_text(ins_word_freq_stmt, 2, utf8word, word_len, SQLITE_STATIC);
-        sqlite3_bind_int(ins_word_freq_stmt, 3, 41);
-        sqlite3_bind_text(ins_word_freq_stmt, 4, is_word, 1, SQLITE_STATIC);
-        sqlite3_bind_text(ins_word_freq_stmt, 5, source, 1, SQLITE_STATIC);
-        if (sqlite3_step(ins_word_freq_stmt) != SQLITE_DONE) {
-            fprintf(stderr, "Error inserting data 1: %s\n", sqlite3_errmsg(db));
-            //sqlite3_close(db);
-            return;
+        char old_word[word_len + 1];
+        old_word[0] = '_';
+        strncpy(old_word + 1, utf8word, word_len);
+        sqlite3_reset(sel_word_freq_stmt);
+        sqlite3_bind_text(sel_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+        sqlite3_bind_text(sel_word_freq_stmt, 2, old_word, word_len + 1, SQLITE_STATIC);
+        if (sqlite3_step(sel_word_freq_stmt) == SQLITE_ROW) {
+            int count = sqlite3_column_int(sel_word_freq_stmt, 0);
+            if (count > 39) {
+                sqlite3_reset(ins_word_freq_stmt);
+                sqlite3_bind_text(ins_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+                sqlite3_bind_text(ins_word_freq_stmt, 2, utf8word, word_len, SQLITE_STATIC);
+                sqlite3_bind_int(ins_word_freq_stmt, 3, 41);
+                sqlite3_bind_text(ins_word_freq_stmt, 4, is_word, 1, SQLITE_STATIC);
+                sqlite3_bind_text(ins_word_freq_stmt, 5, source, 1, SQLITE_STATIC);
+                if (sqlite3_step(ins_word_freq_stmt) != SQLITE_DONE) {
+                    fprintf(stderr, "Error inserting data 1: %s\n", sqlite3_errmsg(db));
+                    //sqlite3_close(db);
+                    return;
+                }
+                sqlite3_reset(del_word_freq_stmt);
+                sqlite3_bind_text(del_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+                sqlite3_bind_text(del_word_freq_stmt, 2, old_word, word_len + 1, SQLITE_STATIC);
+                if (sqlite3_step(del_word_freq_stmt) != SQLITE_DONE) {
+                    fprintf(stderr, "Error deleting data: %s\n", sqlite3_errmsg(db));
+                    //sqlite3_close(db);
+                    return;
+                }
+            } else {
+                sqlite3_reset(upd_word_freq_stmt);
+                sqlite3_bind_text(upd_word_freq_stmt, 1, is_word, 1, SQLITE_STATIC);
+                sqlite3_bind_text(upd_word_freq_stmt, 2, lang_code, strlen(lang_code), SQLITE_STATIC);
+                sqlite3_bind_text(upd_word_freq_stmt, 3, old_word, word_len + 1, SQLITE_STATIC);
+                if (sqlite3_step(upd_word_freq_stmt) != SQLITE_DONE) {
+                    fprintf(stderr, "Error updating data 1: %s\n", sqlite3_errmsg(db));
+                    //sqlite3_close(db);
+                    return;
+                }
+            }
+        } else {
+            sqlite3_reset(ins_word_freq_stmt);
+            sqlite3_bind_text(ins_word_freq_stmt, 1, lang_code, strlen(lang_code), SQLITE_STATIC);
+            sqlite3_bind_text(ins_word_freq_stmt, 2, old_word, word_len + 1, SQLITE_STATIC);
+            sqlite3_bind_int(ins_word_freq_stmt, 3, 1);
+            sqlite3_bind_text(ins_word_freq_stmt, 4, is_word, 1, SQLITE_STATIC);
+            sqlite3_bind_text(ins_word_freq_stmt, 5, source, 1, SQLITE_STATIC);
+            if (sqlite3_step(ins_word_freq_stmt) != SQLITE_DONE) {
+                fprintf(stderr, "Error inserting data 2: %s\n", sqlite3_errmsg(db));
+                //sqlite3_close(db);
+                return;
+            }
         }
-        words_inserted++;
     }
 
 }
 
-void write_uint32(uint8_t *ptr, uint32_t input) {
-    int i = 4;
-    while (i--)
-        *ptr++ = (input >> (8 * i)) & 0xFF;
-}
-
-uint32_t read_uint32(const uint8_t *ptr) {
-    uint32_t ret;
-    ret = ((uint32_t)*ptr++) << 24;
-    ret += ((uint32_t)*ptr++) << 16;
-    ret += ((uint32_t)*ptr++) << 8;
-    ret += *ptr;
-    return ret;
-}
-
+int max_word_len = 0;
+int words_generated = 0;
+int words_inserted = 0;
+int words_updated1 = 0;
+int words_updated2 = 0;
+int num_words = 0;
+int num_phrases = 0;
+int num_grams = 0;
+long total_word_lens = 0;
 void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
     //cout << "[" << utf8word << "]" << endl;
     //return;
     if (!INSERT_INTO_IDX)
       return;
-    int value_len = 4;
+    int value_len;
     uint32_t count = 1;
     char key[400];
-    uint8_t val[5];
     strcpy(key, lang_code);
     strcat(key, " ");
     strcat(key, utf8word);
     word_len++;
     word_len += strlen(lang_code);
-    bool is_found = ix_obj->get((const uint8_t *) key, (uint8_t) word_len, &value_len, val);
-    if (is_found) {
-        count = read_uint32(val);
+    uint8_t *value = ix_obj->get((const uint8_t *) key, (uint8_t) word_len, &value_len);
+    if (value != NULL) {
+        memcpy(&count, value, sizeof(uint32_t));
         count++;
-        write_uint32(val, count);
         words_updated1++;
     } else {
         words_inserted++;
         total_word_lens += word_len;
-        value_len = 4;
-        write_uint32(val, 1);
+        value_len = sizeof(uint32_t);
     }
-    ix_obj->put((const uint8_t *) key, (uint8_t) word_len, val, 4);
+    value = ix_obj->put((const uint8_t *) key, (uint8_t) word_len, (const uint8_t*) &count, 4, &value_len);
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
@@ -1048,8 +1071,10 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-        //ix_obj = new sqlite(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, page_size, cache_size, outFilename);
         ix_obj = new stager(outFilename, cache_size);
+        //ix_obj = new bfos(page_size, page_size, cache_size, outFilename);
+        //ix_obj = new basix(page_size, page_size, cache_size, outFilename);
+        //ix_obj = new sqlite(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
@@ -1145,19 +1170,13 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_IDX) {
         ix_obj->print_stats(ix_obj->size());
         ix_obj->print_num_levels();
-        uint8_t val[5];
         int value_len = 0;
-        int count;
-        bool is_found = ix_obj->get((uint8_t *) "en the ", 7, &value_len, val);
-        if (is_found) {
-            count = read_uint32(val);
-            cout << count << " " << value_len << endl;
-        }
-        is_found = ix_obj->get((uint8_t *) "en and ", 7, &value_len, val);
-        if (is_found) {
-            count = read_uint32(val);
-            cout << count << " " << value_len << endl;
-        }
+        uint32_t *pcount = (uint32_t *) ix_obj->get((uint8_t *) "en the ", 7, &value_len);
+        if (pcount != NULL)
+            cout << *pcount << " " << value_len << endl;
+        pcount = (uint32_t *) ix_obj->get((uint8_t *) "en and ", 7, &value_len);
+        if (pcount != NULL)
+            cout << *pcount << " " << value_len << endl;
         cout << "Max word len: " << max_word_len << endl;
         cout << "Total words generated: " << words_generated << endl;
         cout << "Words inserted " << words_inserted << endl;
