@@ -9,8 +9,8 @@
  */
 
 int INSERT_INTO_IDX = 0;
-int INSERT_INTO_SQLITE_BLASTER = 0;
-int INSERT_INTO_SQLITE = 1;
+int INSERT_INTO_SQLITE_BLASTER = 1;
+int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
 int INSERT_INTO_ROCKSDB = 0;
 int INSERT_INTO_WT = 0;
@@ -32,9 +32,9 @@ int GEN_SQL = 0;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/resource.h>
-#include "../index_research/src/sqlite.h"
-//#include "../sqlite_blaster/src/sqlite_index_blaster.h"
-#include "../index_research/src/stager.h"
+#include "../sqlite_blaster/src/sqlite_index_blaster.h"
+//#include "../index_research/src/sqlite.h"
+//#include "../index_research/src/stager.h"
 
 #if defined(__APPLE__)
 #include <libproc.h>
@@ -92,7 +92,7 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
-sqlite *ix_obj;
+sqlite_index_blaster *ix_obj;
 //stager *ix_obj;
 int start_at = 0;
 
@@ -1080,12 +1080,12 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-        ix_obj = new sqlite(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, page_size, cache_size, outFilename);
+        ix_obj = new sqlite_index_blaster(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, cache_size, outFilename);
         //ix_obj = new stager(outFilename, cache_size);
     }
 
     if (INSERT_INTO_SQLITE_BLASTER) {
-        ix_obj = new sqlite(5, 2, (const char *[]) {"lang", "word", "count", "is_word", "source"}, "imain", page_size, page_size, cache_size, outFilename);
+        ix_obj = new sqlite_index_blaster(5, 2, (const char *[]) {"lang", "word", "count", "is_word", "source"}, "imain", page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
