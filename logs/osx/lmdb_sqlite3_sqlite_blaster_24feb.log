@@ -1,0 +1,509 @@
+23:08:17 ~/git/Text_frequency_research % ./a.out RC_2013-04.zst 512 4096 sqlite.ix
+Csz: 512, pgsz: 4096
+File page count: 0
+10988 10000 0 4 w9831 r0 m0 f404 r0 p20
+ 1502009=280567+736357+547318 i724428 u995653 u0 t4.645
+22023 20000 0 4 w16971 r0 m0 f744 r0 p20
+ 2970299=556558+1459020+1077812 i1304000 u2098104 u0 t4.696
+33024 30000 0 4 w23817 r0 m0 f1070 r0 p20
+ 4455591=837142+2190955+1612898 i1859509 u3244457 u0 t5.065
+44043 40000 0 4 w30915 r0 m0 f1408 r0 p20
+ 6021768=1126498+2950354+2194339 i2413594 u4481117 u0 t5.389
+55121 50000 0 4 w37110 r0 m0 f1703 r0 p20
+ 7457432=1399039+3657323+2711810 i2911567 u5628525 u0 t4.999
+66115 60000 0 4 w43137 r0 m0 f1990 r0 p20
+ 8882525=1666288+4349737+3237298 i3385529 u6785016 u0 t5.008
+77117 70000 0 4 w49038 r0 m0 f2271 r0 p20
+ 10323681=1938542+5063745+3753209 i3866943 u7955847 u0 t5.333
+88102 80000 0 4 w54918 r0 m0 f2551 r0 p20
+ 11702242=2200826+5741136+4250267 i4317541 u9085269 u0 t4.974
+99095 90000 0 4 w60987 r0 m0 f2840 r0 p20
+ 13139065=2468368+6445510+4774403 i4781230 u10266980 u0 t5.245
+110113 100000 0 4 w66678 r0 m0 f3111 r0 p20
+ 14570300=2739305+7152735+5287868 i5233852 u11454839 u0 t5.589
+121109 110000 0 4 w72432 r0 m0 f3385 r0 p20
+ 15981984=3006512+7851613+5792984 i5680743 u12626046 u0 t5.391
+132028 120000 0 4 w78102 r0 m0 f3655 r0 p20
+ 17532484=3286822+8590277+6386159 i6134464 u13941110 u0 t5.638
+142990 130000 0 4 w83814 r0 m0 f3927 r0 p20
+ 18986448=3562710+9311119+6905248 i6579990 u15162403 u0 t5.414
+153925 140000 0 4 w89631 r0 m0 f4204 r0 p20
+ 20474477=3841729+10051396+7435263 i7031485 u16416613 u0 t5.563
+164855 150000 0 4 w95595 r0 m0 f4488 r0 p20
+ 21982251=4126056+10796461+7976893 i7487354 u17688513 u0 t5.689
+175812 160000 0 4 w101643 r0 m0 f4776 r0 p20
+ 23584909=4417148+11560934+8588302 i7950316 u19053849 u0 t5.985
+186797 170000 0 4 w107502 r0 m0 f5055 r0 p20
+ 25060643=4694278+12291216+9118384 i8394369 u20301447 u0 t5.612
+197847 180000 0 4 w113214 r0 m0 f5327 r0 p20
+ 26594805=4977567+13035840+9687961 i8841770 u21607944 u0 t5.81
+208776 190000 0 4 w119010 r0 m0 f5603 r0 p20
+ 28107430=5261667+13783743+10232285 i9285053 u22898194 u0 t5.792
+219728 200000 0 4 w124764 r0 m0 f5877 r0 p20
+ 29612928=5546285+14529981+10770299 i9723903 u24185715 u0 t5.819
+230584 210000 0 4 w130560 r0 m0 f6153 r0 p20
+ 31176719=5839236+15302598+11333221 i10175015 u25526027 u0 t5.979
+241548 220000 0 4 w139452 r1561 m5424 f6249 r6824919 p500
+ 32683216=6122373+16045650+11876729 i10610842 u26816296 u0 t6.215
+252514 230000 0 4 w160467 r10591 m20236 f6279 r17654101 p500
+ 34281333=6415992+16823378+12467909 i11064618 u28189734 u0 t7.218
+263483 240000 0 4 w187003 r26816 m41921 f6321 r27830689 p500
+ 35779645=6698842+17564571+13004988 i11494769 u29476970 u0 t8.03
+274496 250000 0 4 w221772 r51071 m71889 f6379 r38226191 p500
+ 37310768=6986369+18323484+13553505 i11932054 u30794311 u0 t8.111
+285461 260000 0 4 w262896 r81906 m108219 f6450 r48366089 p500
+ 38803050=7268863+19066410+14083606 i12356515 u32081321 u0 t7.777
+296415 270000 0 4 w309898 r119407 m151169 f6533 r58469923 p500
+ 40291659=7548931+19800727+14620226 i12777966 u33365484 u0 t7.792
+307437 280000 0 4 w363564 r163565 m200921 f6629 r68701443 p500
+ 41798389=7832680+20548382+15159093 i13201820 u34668888 u0 t16.948
+318462 290000 0 4 w428188 r217811 m261144 f6746 r79579647 p500
+ 43400957=8135339+21341253+15733409 i13653897 u36053440 u0 t9.581
+329483 300000 0 4 w500915 r280327 m329748 f6879 r90634471 p500
+ 45028066=8442234+22155263+16308545 i14117155 u37456849 u0 t10.263
+340525 310000 0 4 w576296 r346114 m401282 f7018 r101397121 p500
+ 46615497=8738046+22934138+16886727 i14555261 u38835948 u0 t7.701
+351480 320000 0 4 w657852 r417616 m478667 f7169 r112140519 p500
+ 48198443=9038935+23721499+17447383 i14991611 u40213864 u0 t8.385
+362496 330000 0 4 w741943 r492943 m559436 f7326 r122560289 p500
+ 49733443=9330284+24482692+17993474 i15416972 u41548249 u0 t8.159
+373551 340000 0 4 w833278 r575117 m647270 f7497 r133127588 p500
+ 51290419=9626097+25253246+18550462 i15847760 u42902492 u0 t11.212
+384689 350000 0 4 w930180 r663087 m740967 f7679 r143793008 p500
+ 52863840=9922129+26021395+19125405 i16284302 u44267399 u0 t9.509
+395874 360000 0 4 w1033762 r757178 m840949 f7874 r154741596 p500
+ 54481112=10221859+26805577+19724920 i16735234 u45665603 u0 t9.46
+406862 370000 0 4 w1143474 r857712 m947494 f8081 r165887601 p500
+ 56127736=10531055+27599843+20335875 i17190094 u47093523 u0 t12.9
+417894 380000 0 4 w1255068 r959781 m1055422 f8292 r176613954 p500
+ 57710651=10827571+28373736+20913921 i17631260 u48464423 u0 t9.937
+428912 390000 0 4 w1368361 r1064612 m1165831 f8507 r187160900 p500
+ 59267667=11118998+29134387+21483671 i18060868 u49816891 u0 t11.658
+439874 400000 0 4 w1482484 r1170648 m1277284 f8724 r197518453 p500
+ 60798946=11403897+29878773+22048736 i18476705 u51152596 u0 t10.455
+450859 410000 0 4 w1603811 r1283352 m1395576 f8955 r207983890 p500
+ 62344800=11692810+30638301+22610559 i18901097 u52498511 u0 t10.349
+461847 420000 0 4 w1723308 r1395076 m1512571 f9183 r218136106 p500
+ 63844428=11974358+31373784+23155224 i19310232 u53806644 u0 t12.6
+472807 430000 0 4 w1855181 r1518984 m1642116 f9435 r228923104 p500
+ 65437777=12274970+32155539+23733013 i19740962 u55200621 u0 t11.171
+483790 440000 0 4 w1991614 r1646826 m1775621 f9696 r239812682 p500
+ 67045764=12575174+32948774+24314526 i20179469 u56604299 u0 t10.364
+494708 450000 0 4 w2136417 r1782748 m1917567 f9973 r251008573 p500
+ 68699469=12883619+33764275+24912528 i20625666 u58052159 u0 t14.392
+505590 460000 0 4 w2283944 r1922190 m2062766 f10256 r262194206 p500
+ 70351529=13192036+34579703+25508938 i21071208 u59499518 u0 t11.177
+516566 470000 0 4 w2433516 r2063150 m2209496 f10543 r273280930 p500
+ 71990799=13497983+35383004+26106827 i21508573 u60938128 u0 t13.702
+527520 480000 0 4 w2587624 r2209114 m2361278 f10839 r284478599 p500
+ 73645396=13806248+36198720+26705962 i21953052 u62388392 u0 t11.962
+538466 490000 0 4 w2746397 r2359403 m2517531 f11144 r295815389 p500
+ 75322033=14118226+37019796+27319558 i22398791 u63861425 u0 t14.585
+549399 500000 0 4 w2910123 r2514921 m2678968 f11459 r307321657 p500
+ 77023422=14443739+37852951+27939450 i22849953 u65357944 u0 t12.925
+560288 510000 0 4 w3074729 r2671428 m2841271 f11776 r318556263 p500
+ 78683776=14754211+38673947+28537977 i23287488 u66822601 u0 t11.62
+571192 520000 0 4 w3242288 r2830575 m3006131 f12099 r329840885 p500
+ 80352709=15063905+39495351+29144441 i23729333 u68291449 u0 t16.107
+582148 530000 0 4 w3414472 r2994508 m3175914 f12431 r341226292 p500
+ 82036333=15378372+40322769+29756564 i24172066 u69776730 u0 t12.77
+593039 540000 0 4 w3593287 r3165193 m3352570 f12776 r352950120 p500
+ 83771287=15699382+41171815+30392889 i24620113 u71313801 u0 t18.395
+604123 550000 0 4 w3749722 r3314269 m3506779 f13078 r363234428 p500
+ 85292838=15985696+41911091+30952924 i25012377 u72662816 u0 t12.977
+615220 560000 0 4 w3881956 r3440273 m3637262 f13333 r371931118 p500
+ 86578403=16228956+42541143+31420367 i25342467 u73805478 u0 t16.471
+626410 570000 0 4 w4012544 r3564931 m3766259 f13585 r380482652 p500
+ 87844098=16466215+43152805+31889824 i25663495 u74932351 u0 t11.757
+qEOF before end of stream: 3, 627980
+Total lines processed: 571412
+Block Count:4455, 328571
+Avg Block Count:78 = 25708976 / 328571
+Avg Max Count:102, 114, 0
+Level Count:4
+Max word len: 94
+Total words generated: 88015003
+Words inserted 25708976
+Words updated: 75083078
+cache requests:  381641456, Misses: 3784328, Flush#: 13621
+OUBLK INBLK
+    -     -
+2864848896
+1434718208
+23:17:16 ~/git/Text_frequency_research % sqlite3 sqlite.ix "pragma integrity_check"
+ok
+23:17:48 ~/git/Text_frequency_research % ./a.out RC_2013-04.zst 512 4096 lmdb  
+Csz: 512, pgsz: 4096
+mdb_env_open: (2) No such file or directory
+23:18:39 ~/git/Text_frequency_research % mkdir lmdb_word_freq
+23:19:08 ~/git/Text_frequency_research % ./a.out RC_2013-04.zst 512 4096 lmdb
+Csz: 512, pgsz: 4096
+10988 10000 1502009=280567+736357+547318 724428 11488705 3.47234
+22023 20000 2970299=556558+1459020+1077812 1304000 21520925 3.65174
+33024 30000 4455591=837142+2190955+1612898 1859509 31399521 3.91542
+44043 40000 6021768=1126498+2950354+2194339 2413594 41385127 3.91761
+55121 50000 7457432=1399039+3657323+2711810 2911567 50455271 3.87077
+66115 60000 8882525=1666288+4349737+3237298 3385529 59177558 3.82912
+77117 70000 10323681=1938542+5063745+3753209 3866943 68067889 3.99099
+88102 80000 11702242=2200826+5741136+4250267 4317541 76421412 3.91196
+99095 90000 13139065=2468368+6445510+4774403 4781230 85047761 4.35051
+110113 100000 14570300=2739305+7152735+5287868 5233852 93548450 4.25064
+121109 110000 15981984=3006512+7851613+5792984 5680743 101973068 4.32834
+132028 120000 17532484=3286822+8590277+6386159 6134464 110568395 4.71217
+142990 130000 18986448=3562710+9311119+6905248 6579990 119045918 4.69022
+153925 140000 20474477=3841729+10051396+7435263 7031485 127656306 4.9642
+164855 150000 21982251=4126056+10796461+7976893 7487354 136380943 5.1618
+175812 160000 23584909=4417148+11560934+8588302 7950316 145256002 5.78406
+186797 170000 25060643=4694278+12291216+9118384 8394369 153758386 5.59589
+197847 180000 26594805=4977567+13035840+9687961 8841770 162371776 5.94674
+208776 190000 28107430=5261667+13783743+10232285 9285053 170942349 6.1973
+219728 200000 29612928=5546285+14529981+10770299 9723903 179428839 6.56825
+230584 210000 31176719=5839236+15302598+11333221 10175015 188163605 7.01469
+241548 220000 32683216=6122373+16045650+11876729 10610842 196619592 7.0712
+252514 230000 34281333=6415992+16823378+12467909 11064618 205434439 7.61717
+263483 240000 35779645=6698842+17564571+13004988 11494769 213795558 7.70732
+274496 250000 37310768=6986369+18323484+13553505 11932054 222359758 8.15296
+285461 260000 38803050=7268863+19066410+14083606 12356515 230660880 8.33793
+296415 270000 40291659=7548931+19800727+14620226 12777966 238892517 8.62748
+307437 280000 41798389=7832680+20548382+15159093 13201820 247196823 9.08489
+318462 290000 43400957=8135339+21341253+15733409 13653897 256015537 9.59235
+329483 300000 45028066=8442234+22155263+16308545 14117155 265110181 10.2493
+340525 310000 46615497=8738046+22934138+16886727 14555261 273681989 10.4043
+351480 320000 48198443=9038935+23721499+17447383 14991611 282250611 10.5698
+362496 330000 49733443=9330284+24482692+17993474 15416972 290564197 10.73
+373551 340000 51290419=9626097+25253246+18550462 15847760 298996298 11.1796
+384689 350000 52863840=9922129+26021395+19125405 16284302 307559162 11.4769
+395874 360000 54481112=10221859+26805577+19724920 16735234 316371174 12.0601
+406862 370000 56127736=10531055+27599843+20335875 17190094 325283338 10.8793
+417894 380000 57710651=10827571+28373736+20913921 17631260 333906370 12.36
+428912 390000 59267667=11118998+29134387+21483671 18060868 342338435 12.5387
+439874 400000 60798946=11403897+29878773+22048736 18476705 350486309 13.9281
+450859 410000 62344800=11692810+30638301+22610559 18901097 358833159 14.4102
+461847 420000 63844428=11974358+31373784+23155224 19310232 366871251 15.4441
+472807 430000 65437777=12274970+32155539+23733013 19740962 375381433 16.5646
+483790 440000 67045764=12575174+32948774+24314526 20179469 384040865 17.6918
+494708 450000 68699469=12883619+33764275+24912528 20625666 392892508 18.9748
+505590 460000 70351529=13192036+34579703+25508938 21071208 401750628 20.1133
+516566 470000 71990799=13497983+35383004+26106827 21508573 410470453 17.6145
+527520 480000 73645396=13806248+36198720+26705962 21953052 419288048 21.1588
+538466 490000 75322033=14118226+37019796+27319558 22398791 428130128 23.025
+549399 500000 77023422=14443739+37852951+27939450 22849953 437065864 23.4685
+560288 510000 78683776=14754211+38673947+28537977 23287488 445791281 15.6398
+571192 520000 80352709=15063905+39495351+29144441 23729333 454656156 24.9124
+582148 530000 82036333=15378372+40322769+29756564 24172066 463508635 25.7183
+593039 540000 83771287=15699382+41171815+30392889 24620113 472537652 28.7542
+604123 550000 85292838=15985696+41911091+30952924 25012377 480336018 23.5476
+615220 560000 86578403=16228956+42541143+31420367 25342467 486883598 15.9136
+626410 570000 87844098=16466215+43152805+31889824 25663495 493289726 23.7517
+qEOF before end of stream: 3, 626544
+Total lines processed: 570118
+OUBLK INBLK
+    -     -
+179793920
+28085649408
+23:30:07 ~/git/Text_frequency_research % ls lmdb_word_freq 
+data.mdb	lock.mdb
+23:30:14 ~/git/Text_frequency_research % cd lmdb_word_freq 
+23:30:20 ~/git/Text_frequency_research/lmdb_word_freq % du -h -d 1
+2.8G	.
+23:30:21 ~/git/Text_frequency_research/lmdb_word_freq % ls -lt -h ../sqlite.ix
+-rw-r--r--  1 arun  staff   1.3G Feb 23 23:17 ../sqlite.ix
+23:30:31 ~/git/Text_frequency_research/lmdb_word_freq % cd ..
+23:30:50 ~/git/Text_frequency_research % sqlite3 sqlite.ix
+SQLite version 3.37.0 2021-12-09 01:34:53
+Enter ".help" for usage hints.
+sqlite> select * from imain where lang='en' and word='and ';
+en|and |330724|n|r
+sqlite> select * from imain where lang='en' and word='the ';
+en|the |617567|n|r
+sqlite> select * from imain where lang='en' and word='the key';
+en|the key|382|y|r
+sqlite> select * from imain where lang='en' and word='the key ingredient';
+en|the key ingredient|1|y|r
+sqlite> select * from imain where lang='en' and word='gredient';
+en|gredient|260|n|r
+sqlite> select * from imain where lang='en' and word='ingredient';
+en|ingredient|259|y|r
+sqlite> select * from imain where lang='en' and word='ingredients';
+en|ingredients|206|y|r
+sqlite> .exit
+23:32:13 ~/git/Text_frequency_research % sh compile_gen_words.sh 
+clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:102:19: warning: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    : public std::iterator<std::random_access_iterator_tag
+                  ^
+/usr/local/include/rapidjson/document.h:548:22: note: in instantiation of template class 'rapidjson::GenericMemberIterator<false, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>' requested here
+    typedef typename GenericMemberIterator<false,Encoding,Allocator>::Iterator MemberIterator;  //!< Member iterator for iterating in object.
+                     ^
+/usr/local/include/rapidjson/document.h:2024:32: note: in instantiation of template class 'rapidjson::GenericValue<rapidjson::UTF8<>>' requested here
+class GenericDocument : public GenericValue<Encoding, Allocator> {
+                               ^
+gen_words_and_phrases.cpp:839:22: note: in instantiation of template class 'rapidjson::GenericDocument<rapidjson::UTF8<>>' requested here
+    string author = d["author"].IsString() ? d["author"].GetString() : "null";
+                     ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:110:18: warning: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    typedef std::iterator<std::random_access_iterator_tag,ValueType> BaseType;
+                 ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:102:19: warning: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    : public std::iterator<std::random_access_iterator_tag
+                  ^
+/usr/local/include/rapidjson/document.h:549:22: note: in instantiation of template class 'rapidjson::GenericMemberIterator<true, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>' requested here
+    typedef typename GenericMemberIterator<true,Encoding,Allocator>::Iterator ConstMemberIterator;  //!< Constant member iterator for iterating in object.
+                     ^
+/usr/local/include/rapidjson/document.h:2024:32: note: in instantiation of template class 'rapidjson::GenericValue<rapidjson::UTF8<>>' requested here
+class GenericDocument : public GenericValue<Encoding, Allocator> {
+                               ^
+gen_words_and_phrases.cpp:839:22: note: in instantiation of template class 'rapidjson::GenericDocument<rapidjson::UTF8<>>' requested here
+    string author = d["author"].IsString() ? d["author"].GetString() : "null";
+                     ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:110:18: warning: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    typedef std::iterator<std::random_access_iterator_tag,ValueType> BaseType;
+                 ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+4 warnings generated.
+23:33:29 ~/git/Text_frequency_research % ./a.out RC_2013-04.zst 250000 4096 sqlite3
+Csz: 250000, pgsz: 4096
+10988 10000 1502009=280567+736357+547318 0 0 10.1331
+22023 20000 2970299=556558+1459020+1077812 0 0 21.7823
+33024 30000 4455591=837142+2190955+1612898 0 0 28.1764
+44043 40000 6021768=1126498+2950354+2194339 0 0 28.6676
+55121 50000 7457432=1399039+3657323+2711810 0 0 28.1747
+66115 60000 8882525=1666288+4349737+3237298 0 0 30.2533
+77117 70000 10323681=1938542+5063745+3753209 0 0 27.7213
+88102 80000 11702242=2200826+5741136+4250267 0 0 31.2655
+qEOF before end of stream: 3, 98001
+Total lines processed: 89013
+
+OUBLK INBLK
+    -     -
+10600448
+6518161408
+23:38:38 ~/git/Text_frequency_research % q
+zsh: command not found: q
+23:38:38 ~/git/Text_frequency_research % ls
+LICENSE				misc
+RC_2013-04.zst			obj
+README.md			rdb_compile.sh
+Text_frequency_research.csproj	rocksdb-7.7.3
+a.out				rocksdb-7.7.3.tar.gz
+a.out.dSYM			rocksdb_word_freq
+basix4.ix			sample_stager_4m.7z
+bfos4.ix			sqlite-amalgamation-3390400
+bin				sqlite.ix
+common.h			sqlite3.39.04.zip
+compile_gen_words.sh		sqlite3.c
+fail.log			sqlite3.h
+gen_words_and_phrases.cpp	sqlite3.o
+gen_words_and_phrases.cs	sum_log_time.sh
+gen_words_and_phrases.go	test5.ix
+gen_words_and_phrases.py	twitter.sh
+lid.176.bin			wiredtiger-11.1.0
+lmdb_word_freq			wt_word_freq
+logs
+23:38:40 ~/git/Text_frequency_research % ls -lt | more
+total 16352760
+-rwxr-xr-x   1 arun  staff    12129896 Feb 23 23:33 a.out
+drwxr-xr-x   4 arun  staff         128 Feb 23 23:19 lmdb_word_freq
+-rw-r--r--   1 arun  staff       45962 Feb 23 23:18 gen_words_and_phrases.cpp
+-rw-r--r--   1 arun  staff  1364082688 Feb 23 23:17 sqlite.ix
+-rw-r--r--   1 arun  staff        1583 Feb 23 19:24 compile_gen_words.sh
+drwxr-xr-x   8 arun  staff         256 Feb 21 22:46 misc
+drwxr-xr-x  17 arun  staff         544 Feb 21 21:19 rocksdb_word_freq
+drwxr-xr-x   9 arun  staff         288 Feb 12 13:28 logs
+-rw-r--r--   1 arun  staff          79 Feb  1 18:59 sum_log_time.sh
+-rw-r--r--   1 arun  staff  1342152390 Jan 10 23:15 sample_stager_4m.7z
+-rw-r--r--   1 arun  staff          37 Jan  6 01:18 fail.log
+drwxr-xr-x  53 arun  staff        1696 Dec 24 18:05 wt_word_freq
+drwxr-xr-x  20 arun  staff         640 Dec 24 08:38 wiredtiger-11.1.0
+drwxr-xr-x  66 arun  staff        2112 Dec 23 18:37 rocksdb-7.7.3
+-rw-r--r--   1 arun  staff    10270983 Dec 23 18:05 rocksdb-7.7.3.tar.gz
+-rw-r--r--   1 arun  staff         948 Dec 23 18:05 rdb_compile.sh
+-rw-r--r--   1 arun  staff     1404112 Dec 21 17:49 sqlite3.o
+-rw-r--r--   1 arun  staff     2557873 Dec 21 17:49 sqlite3.39.04.zip
+-rw-r--r--   1 arun  staff   209035264 Dec 18 13:31 bfos4.ix
+-rw-r--r--   1 arun  staff  2194440192 Dec 17 16:03 basix4.ix
+-rw-r--r--   1 arun  staff     1122304 Dec 16 16:34 test5.ix
+-rw-r--r--   1 arun  staff         388 Dec 11 15:01 Text_frequency_research.cspr23:39:41 ~/git/Text_frequency_research % sh compile_gen_words.sh 
+clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:102:19: warning: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    : public std::iterator<std::random_access_iterator_tag
+                  ^
+/usr/local/include/rapidjson/document.h:548:22: note: in instantiation of template class 'rapidjson::GenericMemberIterator<false, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>' requested here
+    typedef typename GenericMemberIterator<false,Encoding,Allocator>::Iterator MemberIterator;  //!< Member iterator for iterating in object.
+                     ^
+/usr/local/include/rapidjson/document.h:2024:32: note: in instantiation of template class 'rapidjson::GenericValue<rapidjson::UTF8<>>' requested here
+class GenericDocument : public GenericValue<Encoding, Allocator> {
+                               ^
+gen_words_and_phrases.cpp:839:22: note: in instantiation of template class 'rapidjson::GenericDocument<rapidjson::UTF8<>>' requested here
+    string author = d["author"].IsString() ? d["author"].GetString() : "null";
+                     ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:110:18: warning: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    typedef std::iterator<std::random_access_iterator_tag,ValueType> BaseType;
+                 ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:102:19: warning: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    : public std::iterator<std::random_access_iterator_tag
+                  ^
+/usr/local/include/rapidjson/document.h:549:22: note: in instantiation of template class 'rapidjson::GenericMemberIterator<true, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>' requested here
+    typedef typename GenericMemberIterator<true,Encoding,Allocator>::Iterator ConstMemberIterator;  //!< Constant member iterator for iterating in object.
+                     ^
+/usr/local/include/rapidjson/document.h:2024:32: note: in instantiation of template class 'rapidjson::GenericValue<rapidjson::UTF8<>>' requested here
+class GenericDocument : public GenericValue<Encoding, Allocator> {
+                               ^
+gen_words_and_phrases.cpp:839:22: note: in instantiation of template class 'rapidjson::GenericDocument<rapidjson::UTF8<>>' requested here
+    string author = d["author"].IsString() ? d["author"].GetString() : "null";
+                     ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+In file included from gen_words_and_phrases.cpp:26:
+/usr/local/include/rapidjson/document.h:110:18: warning: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' is deprecated [-Wdeprecated-declarations]
+    typedef std::iterator<std::random_access_iterator_tag,ValueType> BaseType;
+                 ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator.h:27:29: note: 'iterator<std::random_access_iterator_tag, const rapidjson::GenericMember<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<>>>' has been explicitly marked deprecated here
+struct _LIBCPP_TEMPLATE_VIS _LIBCPP_DEPRECATED_IN_CXX17 iterator
+                            ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1066:39: note: expanded from macro '_LIBCPP_DEPRECATED_IN_CXX17'
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+                                      ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config:1043:48: note: expanded from macro '_LIBCPP_DEPRECATED'
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+                                               ^
+4 warnings generated.
+23:39:59 ~/git/Text_frequency_research % ./a.out RC_2013-04.zst 250000 4096 sqlite3
+Csz: 250000, pgsz: 4096
+Opened database successfully
+BEGIN EXCLUSIVE;
+10988 10000 1502009=280567+736357+547318 724428 0 14.2405
+22023 20000 2970299=556558+1459020+1077812 1304000 0 14.5355
+33024 30000 4455591=837142+2190955+1612898 1859509 0 15.5784
+44043 40000 6021768=1126498+2950354+2194339 2413594 0 16.8326
+55121 50000 7457432=1399039+3657323+2711810 2911567 0 16.3353
+66115 60000 8882525=1666288+4349737+3237298 3385529 0 16.3756
+77117 70000 10323681=1938542+5063745+3753209 3866943 0 16.4734
+88102 80000 11702242=2200826+5741136+4250267 4317541 0 15.6489
+99095 90000 13139065=2468368+6445510+4774403 4781230 0 16.4227
+110113 100000 14570300=2739305+7152735+5287868 5233852 0 16.6127
+121109 110000 15981984=3006512+7851613+5792984 5680743 0 16.6879
+132028 120000 17532484=3286822+8590277+6386159 6134464 0 18.0717
+142990 130000 18986448=3562710+9311119+6905248 6579990 0 17.2467
+153925 140000 20474477=3841729+10051396+7435263 7031485 0 17.7921
+164855 150000 21982251=4126056+10796461+7976893 7487354 0 18.1659
+175812 160000 23584909=4417148+11560934+8588302 7950316 0 19.2638
+186797 170000 25060643=4694278+12291216+9118384 8394369 0 19.2849
+197847 180000 26594805=4977567+13035840+9687961 8841770 0 28.0862
+208776 190000 28107430=5261667+13783743+10232285 9285053 0 35.8745
+219728 200000 29612928=5546285+14529981+10770299 9723903 0 37.7308
+230584 210000 31176719=5839236+15302598+11333221 10175015 0 43.7363
+241548 220000 32683216=6122373+16045650+11876729 10610842 0 35.6926
+252514 230000 34281333=6415992+16823378+12467909 11064618 0 47.7185
+263483 240000 35779645=6698842+17564571+13004988 11494769 0 30.4949
+274496 250000 37310768=6986369+18323484+13553505 11932054 0 33.1851
+285461 260000 38803050=7268863+19066410+14083606 12356515 0 41.6133
+296415 270000 40291659=7548931+19800727+14620226 12777966 0 30.2787
+307437 280000 41798389=7832680+20548382+15159093 13201820 0 19.4854
+318462 290000 43400957=8135339+21341253+15733409 13653897 0 20.7104
+329483 300000 45028066=8442234+22155263+16308545 14117155 0 21.2257
+340525 310000 46615497=8738046+22934138+16886727 14555261 0 20.8754
+351480 320000 48198443=9038935+23721499+17447383 14991611 0 20.7565
+362496 330000 49733443=9330284+24482692+17993474 15416972 0 20.3402
+373551 340000 51290419=9626097+25253246+18550462 15847760 0 20.691
+384689 350000 52863840=9922129+26021395+19125405 16284302 0 21.0342
+395874 360000 54481112=10221859+26805577+19724920 16735234 0 21.5997
+406862 370000 56127736=10531055+27599843+20335875 17190094 0 22.3824
+417894 380000 57710651=10827571+28373736+20913921 17631260 0 21.2372
+428912 390000 59267667=11118998+29134387+21483671 18060868 0 21.2034
+439874 400000 60798946=11403897+29878773+22048736 18476705 0 21.0732
+450859 410000 62344800=11692810+30638301+22610559 18901097 0 21.01
+461847 420000 63844428=11974358+31373784+23155224 19310232 0 20.7307
+472807 430000 65437777=12274970+32155539+23733013 19740962 0 35.0182
+483790 440000 67045764=12575174+32948774+24314526 20179469 0 60.8594
+494708 450000 68699469=12883619+33764275+24912528 20625666 0 42.0737
+505590 460000 70351529=13192036+34579703+25508938 21071208 0 60.9854
+516566 470000 71990799=13497983+35383004+26106827 21508573 0 45.8789
+527520 480000 73645396=13806248+36198720+26705962 21953052 0 65.1537
+538466 490000 75322033=14118226+37019796+27319558 22398791 0 65.366
+549399 500000 77023422=14443739+37852951+27939450 22849953 0 67.6916
+560288 510000 78683776=14754211+38673947+28537977 23287488 0 68.1343
+571192 520000 80352709=15063905+39495351+29144441 23729333 0 68.8981
+582148 530000 82036333=15378372+40322769+29756564 24172066 0 70.0506
+593039 540000 83771287=15699382+41171815+30392889 24620113 0 70.0415
+604123 550000 85292838=15985696+41911091+30952924 25012377 0 69.015
+615220 560000 86578403=16228956+42541143+31420367 25342467 0 64.1817
+626410 570000 87844098=16466215+43152805+31889824 25663495 0 60.7699
+qEOF before end of stream: 3, 626544
+Total lines processed: 570118
+OUBLK INBLK
+    -     -
+15565168640
+27620323328
+00:12:52 ~/git/Text_frequency_research % ls -lt -h sqlite3
+-rw-r--r--  1 arun  staff   945M Feb 24 00:12 sqlite3
+00:13:11 ~/git/Text_frequency_research % ls -lt -h sqlite.ix
+-rw-r--r--  1 arun  staff   1.3G Feb 23 23:17 sqlite.ix
+00:13:18 ~/git/Text_frequency_research % 

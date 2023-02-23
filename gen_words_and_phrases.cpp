@@ -8,8 +8,9 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 1;
-int INSERT_INTO_SQLITE = 0;
+int INSERT_INTO_IDX = 0;
+int INSERT_INTO_SQLITE_BLASTER = 0;
+int INSERT_INTO_SQLITE = 1;
 int INSERT_INTO_LMDB = 0;
 int INSERT_INTO_ROCKSDB = 0;
 int INSERT_INTO_WT = 0;
@@ -91,8 +92,8 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
-//sqlite *ix_obj;
-stager *ix_obj;
+sqlite *ix_obj;
+//stager *ix_obj;
 int start_at = 0;
 
 int kbhit() {
@@ -225,6 +226,34 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
         write_uint32(val, 1);
     }
     ix_obj->put((const uint8_t *) key, (uint8_t) word_len, val, 4);
+    if (word_len > max_word_len)
+        max_word_len = word_len;
+}
+
+void insert_into_sqlite_blaster(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
+    //cout << "[" << utf8word << "]" << endl;
+    //return;
+    if (!INSERT_INTO_SQLITE_BLASTER)
+      return;
+    int32_t count = 1;
+    int expected_rec_len = strlen(lang_code) + word_len + sizeof(int32_t) + strlen(is_word) + strlen(source) + 8;
+    uint8_t sqlite_rec[expected_rec_len];
+    uint8_t sqlite_rec_read[expected_rec_len];
+    const size_t value_lens[] = {strlen(lang_code), (size_t) word_len, sizeof(int32_t), strlen(is_word), strlen(source)};
+    const uint8_t col_types[] = {SQLT_TYPE_TEXT, SQLT_TYPE_TEXT, SQLT_TYPE_INT32, SQLT_TYPE_TEXT, SQLT_TYPE_TEXT};
+    int rec_len = ix_obj->make_new_rec(sqlite_rec, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
+    int rec_read_len = expected_rec_len;
+    bool is_found = ix_obj->get(sqlite_rec, -rec_len, &rec_read_len, sqlite_rec_read);
+    if (is_found) {
+        ix_obj->read_col(2, sqlite_rec_read, rec_read_len, &count);
+        count++;
+        rec_len = ix_obj->make_new_rec(sqlite_rec, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
+        words_updated1++;
+    } else {
+        words_inserted++;
+        total_word_lens += word_len;
+    }
+    ix_obj->put(sqlite_rec, -rec_len, NULL, 0);
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
@@ -386,6 +415,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     string utf8word = myconv.to_bytes(word);
     insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
+    insert_into_sqlite_blaster(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_lmdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_rocksdb(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     //insert_into_wt(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
@@ -396,6 +426,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
             string word_with_spc = utf8word.substr(0, spc_loc+1);
             insert_into_db(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_idx(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
+            insert_into_sqlite_blaster(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_lmdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             insert_into_rocksdb(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
             //insert_into_wt(word_with_spc.c_str(), word_with_spc.length(), lang_code, "n", "r");
@@ -746,7 +777,7 @@ void processPost(string& utf8body) {
     split_words(utf8body, lang_code, is_spaceless_lang);
 
     if (lines_processed % 10000 == 0) {
-        if (INSERT_INTO_IDX) {
+        if (INSERT_INTO_IDX || INSERT_INTO_SQLITE_BLASTER) {
             cache_stats stats = ix_obj->get_cache_stats();
             cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->get_num_levels()
                   << " w" << stats.pages_written << " r" << stats.pages_read << " m" << stats.total_cache_misses
@@ -961,6 +992,7 @@ int main(int argc, const char** argv)
     if (strcmp(inFilename, "-s") == 0) {
         string s = argv[2];
         INSERT_INTO_IDX = 0;
+        INSERT_INTO_SQLITE_BLASTER = 0;
         INSERT_INTO_SQLITE = 0;
         INSERT_INTO_ROCKSDB = 0;
         GEN_SQL = 0;
@@ -1048,8 +1080,12 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-        //ix_obj = new sqlite(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, page_size, cache_size, outFilename);
-        ix_obj = new stager(outFilename, cache_size);
+        ix_obj = new sqlite(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, page_size, cache_size, outFilename);
+        //ix_obj = new stager(outFilename, cache_size);
+    }
+
+    if (INSERT_INTO_SQLITE_BLASTER) {
+        ix_obj = new sqlite(5, 2, (const char *[]) {"lang", "word", "count", "is_word", "source"}, "imain", page_size, page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
@@ -1142,7 +1178,7 @@ int main(int argc, const char** argv)
     }
  
     cout << "Total lines processed: " << lines_processed << endl;
-    if (INSERT_INTO_IDX) {
+    if (INSERT_INTO_IDX || INSERT_INTO_SQLITE_BLASTER) {
         ix_obj->print_stats(ix_obj->size());
         ix_obj->print_num_levels();
         uint8_t val[5];
