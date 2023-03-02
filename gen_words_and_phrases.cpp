@@ -241,13 +241,13 @@ void insert_into_sqlite_blaster(const char *utf8word, int word_len, const char *
     uint8_t sqlite_rec_read[expected_rec_len];
     const size_t value_lens[] = {strlen(lang_code), (size_t) word_len, sizeof(int32_t), strlen(is_word), strlen(source)};
     const uint8_t col_types[] = {SQLT_TYPE_TEXT, SQLT_TYPE_TEXT, SQLT_TYPE_INT32, SQLT_TYPE_TEXT, SQLT_TYPE_TEXT};
-    int rec_len = ix_obj->make_new_rec(sqlite_rec, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
+    int rec_len = ix_obj->make_new_rec(sqlite_rec, 5, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
     int rec_read_len = expected_rec_len;
     bool is_found = ix_obj->get(sqlite_rec, -rec_len, &rec_read_len, sqlite_rec_read);
     if (is_found) {
         ix_obj->read_col(2, sqlite_rec_read, rec_read_len, &count);
         count++;
-        rec_len = ix_obj->make_new_rec(sqlite_rec, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
+        rec_len = ix_obj->make_new_rec(sqlite_rec, 5, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
         words_updated1++;
     } else {
         words_inserted++;
@@ -1027,7 +1027,7 @@ int main(int argc, const char** argv)
         }
 
         rc = sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
-        rc = sqlite3_exec(db, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA journal_mode = OFF", NULL, NULL, NULL);
         sprintf(cmd_str, "PRAGMA cache_size = %d", cache_size);
         rc = sqlite3_exec(db, cmd_str, NULL, NULL, NULL);
         rc = sqlite3_exec(db, "PRAGMA threads = 2", NULL, NULL, NULL);
@@ -1080,12 +1080,12 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-        ix_obj = new sqlite_index_blaster(2, 1, (const char *[]) {"key", "value"}, "imain", page_size, cache_size, outFilename);
+        ix_obj = new sqlite_index_blaster(2, 1, {"key", "value"}, "imain", page_size, cache_size, outFilename);
         //ix_obj = new stager(outFilename, cache_size);
     }
 
     if (INSERT_INTO_SQLITE_BLASTER) {
-        ix_obj = new sqlite_index_blaster(5, 2, (const char *[]) {"lang", "word", "count", "is_word", "source"}, "imain", page_size, cache_size, outFilename);
+        ix_obj = new sqlite_index_blaster(5, 2, {"lang", "word", "count", "is_word", "source"}, "imain", page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
