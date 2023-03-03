@@ -531,44 +531,43 @@ int32_t transform_ltr(int32_t ltr) {
     return ltr;
 }
 
-/// Reads UTF-8 character from in. Also returns the number of bytes occupied by the UTF-8 character in utf8len
-int32_t readUTF8(const char *in, int len, int l, int *utf8len) {
+int32_t readUTF8(string in_str, int len, int l, int& utf8len) {
     int32_t ret;
-    if ((in[l] & 0x80) == 0) {
-        ret = in[l];
-        *utf8len = 1;
+    if ((in_str[l] & 0x80) == 0) {
+        ret = in_str[l];
+        utf8len = 1;
     } else
-    if (l < (len - 1) && (in[l] & 0xE0) == 0xC0 && (in[l + 1] & 0xC0) == 0x80) {
-        *utf8len = 2;
-        ret = (in[l] & 0x1F);
+    if (l < (len - 1) && (in_str[l] & 0xE0) == 0xC0 && (in_str[l + 1] & 0xC0) == 0x80) {
+        utf8len = 2;
+        ret = (in_str[l] & 0x1F);
         ret <<= 6;
-        ret += (in[l + 1] & 0x3F);
+        ret += (in_str[l + 1] & 0x3F);
         if (ret < 0x80)
-        ret = 0;
+            ret = 0;
     } else
-    if (l < (len - 2) && (in[l] & 0xF0) == 0xE0 && (in[l + 1] & 0xC0) == 0x80
-            && (in[l + 2] & 0xC0) == 0x80) {
-        *utf8len = 3;
-        ret = (in[l] & 0x0F);
+    if (l < (len - 2) && (in_str[l] & 0xF0) == 0xE0 && (in_str[l + 1] & 0xC0) == 0x80
+            && (in_str[l + 2] & 0xC0) == 0x80) {
+        utf8len = 3;
+        ret = (in_str[l] & 0x0F);
         ret <<= 6;
-        ret += (in[l + 1] & 0x3F);
+        ret += (in_str[l + 1] & 0x3F);
         ret <<= 6;
-        ret += (in[l + 2] & 0x3F);
+        ret += (in_str[l + 2] & 0x3F);
         if (ret < 0x0800)
-        ret = 0;
+            ret = 0;
     } else
-    if (l < (len - 3) && (in[l] & 0xF8) == 0xF0 && (in[l + 1] & 0xC0) == 0x80
-            && (in[l + 2] & 0xC0) == 0x80 && (in[l + 3] & 0xC0) == 0x80) {
-        *utf8len = 4;
-        ret = (in[l] & 0x07);
+    if (l < (len - 3) && (in_str[l] & 0xF8) == 0xF0 && (in_str[l + 1] & 0xC0) == 0x80
+            && (in_str[l + 2] & 0xC0) == 0x80 && (in_str[l + 3] & 0xC0) == 0x80) {
+        utf8len = 4;
+        ret = (in_str[l] & 0x07);
         ret <<= 6;
-        ret += (in[l + 1] & 0x3F);
+        ret += (in_str[l + 1] & 0x3F);
         ret <<= 6;
-        ret += (in[l + 2] & 0x3F);
+        ret += (in_str[l + 2] & 0x3F);
         ret <<= 6;
-        ret += (in[l + 3] & 0x3F);
+        ret += (in_str[l + 3] & 0x3F);
         if (ret < 0x10000)
-        ret = 0;
+            ret = 0;
     }
     return ret;
 }
@@ -580,7 +579,7 @@ int is_word(int32_t ltr) {
         return 2;
     if (ltr == '_' || ltr == '\'' || ltr == '-')
         return 3;
-    if (ltr >= '0' and ltr <= '9')
+    if (ltr >= '0' && ltr <= '9')
         return 4;
     return 0;
 }
@@ -601,10 +600,7 @@ void insert_grams_in_word(char *lang_code, wstring& word_to_insert, int word_len
 }
 
 #define MAX_WORDS_PER_PHRASE 5
-wstring word_buf;
-int word_buf_count = 0;
-int max_ord_phrase = 0;
-void process_word_buf_rest(char *lang_code, bool is_spaceless_lang) {
+void process_word_buf_rest(wstring& word_buf, int word_buf_count, int max_ord_phrase, char *lang_code, bool is_spaceless_lang) {
     if (word_buf_count < 3)
         return;
     size_t spc_pos = 0;
@@ -618,7 +614,7 @@ void process_word_buf_rest(char *lang_code, bool is_spaceless_lang) {
     }
 }
 
-void process_word(char *lang_code, wstring& word, int max_ord, bool is_spaceless_lang, bool is_compound) {
+void process_word(char *lang_code, wstring& word, wstring& word_buf, int& word_buf_count, int &max_ord_phrase, int max_ord, bool is_spaceless_lang, bool is_compound) {
     if (is_spaceless_lang && max_ord < 2048)
         is_spaceless_lang = false;
     if (word[0] == ' ') {
@@ -637,7 +633,7 @@ void process_word(char *lang_code, wstring& word, int max_ord, bool is_spaceless
         word_buf_count++;
         insert_data(lang_code, word_buf, "y", max_ord_phrase);
         num_phrases++;
-        process_word_buf_rest(lang_code, is_spaceless_lang);
+        process_word_buf_rest(word_buf, word_buf_count, max_ord_phrase, lang_code, is_spaceless_lang);
     } else {
         word_buf.assign(word);
         word_buf_count = 1;
@@ -660,11 +656,14 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
     const char *s_cstr = str2split.c_str();
     int utf8len;
     bool is_compound = false;
+    wstring word_buf;
+    int word_buf_count = 0;
+    int max_ord_phrase = 0;
     for (int i = 0; i < str2split.length(); i += utf8len) {
         if (i > 0 && str2split[i] == '/' && (str2split[i-1] == 'r' || str2split[i-1] == 'u')
                 && (i == 1 || (i > 1 && (str2split[i-2] == ' ' || str2split[i-2] == '/'
                                || str2split[i-2] == '\n' || str2split[i-2] == '|')))) {
-            while (is_word(str2split[++i]));
+            while (++i < str2split.length() && is_word(str2split[i]));
             prev_ltr = 0;
             max_ord = 0;
             same_ltr_count = 0;
@@ -672,7 +671,7 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
             utf8len = 1;
             continue;
         }
-        int32_t ltr = readUTF8(s_cstr, str2split.length(), i, &utf8len);
+        int32_t ltr = readUTF8(str2split, str2split.length(), i, utf8len);
         int32_t ltr_t = transform_ltr(ltr);
         if (!prev_ltr)
             prev_ltr = ltr_t;
@@ -690,7 +689,7 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
                 if (i > 0 && is_word(prev_ltr))
                     word.assign(L" ");
                 word.append(1, (wchar_t) ltr_t);
-                process_word(lang, word, max_ord, is_spaceless_lang, is_compound);
+                process_word(lang, word, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
                 //word_arr.push_back(word);
                 word.clear();
             } else {
@@ -710,7 +709,7 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
                                 && word.find(L"moderator") == string::npos 
                                 && same_ltr_count < 4) {
                     if (word.length() < MAX_WORD_LEN && prev_ltr != '-') {
-                        process_word(lang, word, max_ord, is_spaceless_lang, is_compound);
+                        process_word(lang, word, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
                         word.clear();
                         if (ltr_t == ' ' && prev_ltr < 0x1F000 && (i + utf8len) < str2split.length()
                                 && is_word(str2split[i + utf8len]))
@@ -735,10 +734,8 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
                         && word.find(L"moderator") == string::npos 
                         && same_ltr_count < 4)
             if (word.length() < MAX_WORD_LEN && prev_ltr != '-')
-                process_word(lang, word, max_ord, is_spaceless_lang, is_compound);
+                process_word(lang, word, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
     }
-    word_buf_count = 0;
-    word_buf.clear();
 }
 
 const char *lang_list = "[ja][ko][zh][th][my]";
