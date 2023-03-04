@@ -1,13 +1,11 @@
-using System;
-using System.IO;
-using System.Text;
-using System.Buffers;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Collections;
-using System.Runtime.InteropServices;
-using ZstdSharp;
+import java.lang.System;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import com.github.luben.zstd.ZstdInputStream;
+import com.github.jfasttext.JFastText;
 
+/*
 static class SBExtension {
     public static int IndexOf(
         this StringBuilder sb,
@@ -34,7 +32,7 @@ static class SBExtension {
         return -1;
     }
 }
-
+*/
 class Reddit_Read_ZStd
 {
 
@@ -42,7 +40,8 @@ class Reddit_Read_ZStd
     static int num_phrases = 0;
     static int num_grams = 0;
     static long total_word_lens = 0;
-
+    static JFastText jft = new JFastText();
+/*
     static Int32 transform_ltr(Int32 ltr) {
         if (ltr >= 'A' && ltr <= 'Z')
             return ltr + ('a' - 'A');
@@ -187,16 +186,18 @@ class Reddit_Read_ZStd
 
     const int MAX_WORD_LEN = 21;
     static void split_words(StringBuilder str2split, string lang, bool is_spaceless_lang) {
+        // Console.Write("String: [");
+        // Console.Write(str2split);
+        // Console.WriteLine("]");
         var word = new StringBuilder();
         int max_ord = 0;
         int same_ltr_count = 0;
         Int32 prev_ltr = 0;
-        int utf8len = 0;
         bool is_compound = false;
         var word_buf = new StringBuilder();
         int word_buf_count = 0;
         int max_ord_phrase = 0;
-        for (int i = 0; i < str2split.Length; i += utf8len) {
+        for (int i = 0; i < str2split.Length; i++) {
             if (i > 0 && str2split[i] == '/' && (str2split[i-1] == 'r' || str2split[i-1] == 'u')
                     && (i == 1 || (i > 1 && (str2split[i-2] == ' ' || str2split[i-2] == '/'
                                 || str2split[i-2] == '\n' || str2split[i-2] == '|')))) {
@@ -205,11 +206,9 @@ class Reddit_Read_ZStd
                 max_ord = 0;
                 same_ltr_count = 0;
                 word.Clear();
-                utf8len = 1;
                 continue;
             }
-            Int32 ltr = readUTF8(str2split, str2split.Length, i, ref utf8len);
-            Int32 ltr_t = transform_ltr(ltr);
+            Int32 ltr_t = str2split[i];
             if (prev_ltr == 0)
                 prev_ltr = ltr_t;
             int ltr_type = is_word(ltr_t);
@@ -249,8 +248,8 @@ class Reddit_Read_ZStd
                         if (word.Length < MAX_WORD_LEN && prev_ltr != '-') {
                             process_word(lang, word, word_buf, ref word_buf_count, ref max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
                             word.Clear();
-                            if (ltr_t == ' ' && prev_ltr < 0x1F000 && (i + utf8len) < str2split.Length
-                                    && is_word(str2split[i + utf8len]) > 0) {
+                            if (ltr_t == ' ' && prev_ltr < 0x1F000 && (i + 1) < str2split.Length
+                                    && is_word(str2split[i + 1]) > 0) {
                                 word.Clear(); word.Append(" ");
                             }
                         } else
@@ -278,18 +277,26 @@ class Reddit_Read_ZStd
         }
     }
 
-    [DllImport("../FastText_Lang_bindings/CPP/fasttext_predict.so", EntryPoint = "load_model")]
-    public extern static void load_model(byte[] filename);
+*/
 
-    [DllImport("../FastText_Lang_bindings/CPP/fasttext_predict.so", EntryPoint = "predict")]
-    public extern static void predict(byte[] input, byte[] output);
+    static int indexOf(byte[] arr, byte b) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == b)
+                return i;
+        }
+        return -1;
+    }
 
-    public static void Main(string[] args)
+    public static int main(String[] args)
     {
 
-        load_model(Encoding.UTF8.GetBytes("lid.176.bin"));
+        jft.loadModel("lid.176.bin");
 
-        var infile = Environment.GetCommandLineArgs()[1];
+        // JFastText.ProbLabel probLabel = jft.predictProba(text);
+        // System.out.printf("\nThe label of '%s' is '%s' with probability %f\n",
+        //         text, probLabel.label, Math.exp(probLabel.logProb));
+
+        var infile = args[1];
 
         //#var cctz = new Decompressor(null, 2147483648, 0);
 
@@ -311,20 +318,19 @@ class Reddit_Read_ZStd
         #conn = sqlite3.connect(':memory:')
         #conn.execute("CREATE TABLE word_freq (word, lang, count, is_word, source, mark, primary key (lang, word)) without rowid")*/
 
-        var start_time = DateTime.Now;
+        long start_time = System.currentTimeMillis();
         byte[] ba = new byte[100];
 
-        using var strm = System.IO.File.OpenRead(infile);
-        {
-            using var dstream = new DecompressionStream(strm, 131075, false);
-            dstream.SetParameter(ZstdSharp.Unsafe.ZSTD_dParameter.ZSTD_d_windowLogMax, 31);
-            {
-                while (!Console.KeyAvailable)
-                {
-                    int iRead = dstream.Read(ba, 0, ba.Length);
+        try (FileInputStream fis = new FileInputStream(infile)) {
+
+            try (ZstdInputStream zis = new ZstdInputStream(fis, 2 * 1024 * 1024 * 1024)) {
+
+                while (System.in.available() == 0) {
+
+                    int iRead = dstream.read(ba);
                     if (iRead == -1)
                         break;
-                    int cr_pos = Array.IndexOf<byte>(ba, (byte) 10);
+                    int cr_pos = indexOf(ba, (byte) 10);
                     if (cr_pos == -1 && cr_pos < iRead)
                     {
                         prev_chunk.Write(ba, 0, iRead);
@@ -389,8 +395,8 @@ class Reddit_Read_ZStd
                     if (line_num % 10000 == 0)
                     {
                         //conn.commit();
-                        Console.WriteLine("{0}, {1}, {2}, {3}, {4}", 
-                            line_num, DateTime.Now - start_time, num_words, num_phrases, num_grams);
+                        Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}", 
+                            line_num, (DateTime.Now - start_time).Seconds, (num_words+num_phrases+num_grams), num_words, num_phrases, num_grams);
                         start_time = DateTime.Now;
                         //#output_file.flush()
                     }
@@ -401,6 +407,8 @@ class Reddit_Read_ZStd
 
         //conn.commit();
         Console.WriteLine("Processed lines: ", line_num);
+
+        return 0;
 
         // # def progress(status, remaining, total):
         // #     print(f'Copied {total-remaining} of {total} pages...')
