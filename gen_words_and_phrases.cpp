@@ -9,10 +9,10 @@
  */
 
 int INSERT_INTO_IDX = 0;
-int INSERT_INTO_SQLITE_BLASTER = 1;
+int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
-int INSERT_INTO_ROCKSDB = 0;
+int INSERT_INTO_ROCKSDB = 1;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
@@ -1077,12 +1077,12 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-        ix_obj = new sqlite_index_blaster(2, 1, {"key", "value"}, "imain", page_size, cache_size, outFilename);
+        ix_obj = new sqlite_index_blaster(2, 1, "key, value", "imain", page_size, cache_size, outFilename);
         //ix_obj = new stager(outFilename, cache_size);
     }
 
     if (INSERT_INTO_SQLITE_BLASTER) {
-        ix_obj = new sqlite_index_blaster(5, 2, {"lang", "word", "count", "is_word", "source"}, "imain", page_size, cache_size, outFilename);
+        ix_obj = new sqlite_index_blaster(5, 2, "lang, word, count, is_word, source", "imain", page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
@@ -1121,12 +1121,14 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_ROCKSDB) {
       rdb_options.IncreaseParallelism();
       rdb_options.OptimizeLevelStyleCompaction();
-/*      //rdb_options.setCompressionType(CompressionType::kNoCompression);
+      //rdb_options.setCompressionType(CompressionType::kNoCompression);
          rocksdb::BlockBasedTableOptions table_options;
+         //table_options.block_size = 16384;
          table_options.enable_index_compression = false;
          table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
          rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
          rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
+         rdb_options.disable_auto_compactions = true;
          rdb_options.write_buffer_size = 64 * 1024 * 1024LL;
          rdb_options.max_write_buffer_number = 3;
          rdb_options.target_file_size_base = 64 * 1024 * 1024LL;
@@ -1138,7 +1140,7 @@ int main(int argc, const char** argv)
          rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
          rdb_options.max_bytes_for_level_multiplier = 8;
          rdb_options.compression = rocksdb::CompressionType::kNoCompression;
-*/
+
       // create the DB if it's not already present
       rdb_options.create_if_missing = true;
       rdb_options.rate_limiter = shared_ptr<RateLimiter>(NewGenericRateLimiter(2000000000L));

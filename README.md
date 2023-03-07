@@ -80,13 +80,14 @@ Frequencies for following four types of entries are calculated:
 
 Since we are processing gigabytes of text, billions of entries are generated. So here is the bottleneck: It would take weeks if not months to process all this data unless expensive hardware is used. There are so many in-memory and on-disk databases out there, but which one should we use?  The one that is fastest and most cost effective of course.
 
-So the quest for selecting the database began and so far the following have been evaluated with Reddit posts and are listed here in the order of choice:
+So the quest for selecting the database began and so far the following have been evaluated with Reddit posts and are listed here in the order of performance:
 
-1. RocksDB
-2. Sqlite
-3. LMDB
-4. WiredTiger
-5. MySQL
+1. [RocksDB](https://github.com/facebook/rocksdb)
+2. [Sqlite without recovery](https://github.com/siara-cc/sqlite_blaster)
+2. [LMDB](https://github.com/LMDB/lmdb)
+3. [Sqlite](https://sqlite.org)
+4. [WiredTiger](https://github.com/wiredtiger/wiredtiger)
+5. [MySQL](https://github.com/mysql/mysql-server)
 
 Although the initial speed is slow, RocksDB seems to be the only database that seems to sustain populating several billion entries with its LSM design.
 
