@@ -12,7 +12,7 @@ int INSERT_INTO_IDX = 0;
 int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
-int INSERT_INTO_ROCKSDB = 1;
+int INSERT_INTO_ROCKSDB = 0;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
@@ -80,7 +80,7 @@ MDB_cursor *cursor;
 
 time_point<steady_clock> start;
 fasttext::FastText ftext;
-vector<char> remain_buf;
+string remain_buf;
 size_t line_count = 0;
 size_t lines_processed = 0;
 sqlite3 *db;
@@ -413,6 +413,7 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     words_generated++;
 
     string utf8word = myconv.to_bytes(word);
+    cout << "[" << utf8word << "], " << word.length() << endl;
     insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_sqlite_blaster(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
@@ -442,10 +443,10 @@ void predict(fasttext::FastText& m, std::string input, char *out_lang_code) {
     vector<pair<fasttext::real, string>> predictions;
     m.predictLine(ioss, predictions, k, threshold);
     for (const auto& prediction : predictions) {
-        if (prediction.first > .5)
+        // if (prediction.first > .5)
             strcpy(out_lang_code, strrchr(prediction.second.c_str(), '_')+1);
-        else
-            strcpy(out_lang_code, "en");
+        // else
+        //     strcpy(out_lang_code, "en");
         break;
     }
     ///printPredictions(predictions, true, true);
@@ -512,9 +513,12 @@ int32_t transform_ltr(int32_t ltr) {
         return ltr + ('a' - 'A');
     if (ltr < 127)
         return ltr;
-    if (ltr < 8216 || ltr > 8288)
+    if (ltr < 8212 || ltr > 8288)
         return ltr;
     switch (ltr) {
+        case 8212:
+            ltr = 45;
+            break;
         case 8216:
         case 8217:
             ltr = 39;
@@ -575,7 +579,7 @@ int32_t readUTF8(string in_str, int len, int l, int& utf8len) {
 int is_word(int32_t ltr) {
     if ((ltr >= 'a' && ltr <= 'z') || (ltr >= 'A' && ltr <= 'Z'))
         return 1;
-    if (ltr > 128)
+    if (ltr > 128 && ltr < 0x1F000 && ltr != 8205)
         return 2;
     if (ltr == '_' || ltr == '\'' || ltr == '-')
         return 3;
@@ -606,7 +610,7 @@ void process_word_buf_rest(wstring& word_buf, int word_buf_count, int max_ord_ph
     size_t spc_pos = 0;
     for (int n = 1; n < word_buf_count - 1; n++) {
         size_t next_spc_pos = word_buf.find(' ', spc_pos) + 1;
-        wstring wstr = (is_spaceless_lang ? word_buf.substr(n)
+        wstring wstr = (is_spaceless_lang || word_buf[0] > 0x1F000 || word_buf[0] == 8205 ? word_buf.substr(n)
                             : word_buf.substr(next_spc_pos));
         insert_data(lang_code, wstr, "y", max_ord_phrase);
         spc_pos = next_spc_pos;
@@ -615,11 +619,13 @@ void process_word_buf_rest(wstring& word_buf, int word_buf_count, int max_ord_ph
 }
 
 void process_word(char *lang_code, wstring& word, wstring& word_buf, int& word_buf_count, int &max_ord_phrase, int max_ord, bool is_spaceless_lang, bool is_compound) {
+    if (word.length() == 0)
+        return;
     if (is_spaceless_lang && max_ord < 2048)
         is_spaceless_lang = false;
-    if (word[0] == ' ') {
+    if (word[0] == ' ' || word[0] == 8205) {
         if (word_buf_count == MAX_WORDS_PER_PHRASE) {
-            if (is_spaceless_lang && word.length() == 2)
+            if (word.length() == 2 && (is_spaceless_lang || word_buf[1] > 0x1F000 || word_buf[1] == 8205))
                 word_buf.erase(0, 1);
             else {
                 size_t spc_pos = word_buf.find(' ');
@@ -629,7 +635,10 @@ void process_word(char *lang_code, wstring& word, wstring& word_buf, int& word_b
         }
         if (max_ord > max_ord_phrase)
             max_ord_phrase = max_ord;
-        word_buf.append(is_spaceless_lang && word.length() == 2 ? word.substr(1) : word);
+        if (word.length() == 2 && (is_spaceless_lang || word[1] > 0x1F000 || word[1] == 8205))
+            word_buf.append(word.substr(1));
+        else
+            word_buf.append(word);
         word_buf_count++;
         insert_data(lang_code, word_buf, "y", max_ord_phrase);
         num_phrases++;
@@ -641,6 +650,8 @@ void process_word(char *lang_code, wstring& word, wstring& word_buf, int& word_b
     }
     if (word[0] == ' ')
         word.erase(0, 1);
+    if (word.length() == 0 || word[0] == 8205)
+        return;
     num_words++;
     insert_data(lang_code, word, "y", max_ord);
     if (!is_compound && (word[0] < '0' || word[0] > '9') && is_word(word[0]) && word.length() < 16 && !is_spaceless_lang)
@@ -673,17 +684,17 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
         }
         int32_t ltr = readUTF8(str2split, str2split.length(), i, utf8len);
         int32_t ltr_t = transform_ltr(ltr);
-        if (!prev_ltr)
-            prev_ltr = ltr_t;
         int ltr_type = is_word(ltr_t);
-        // Truth Table for XOR
-        // 0 0 - 0 - if ltr_t is emoji and prev_ltr is not emoji
-        // 0 1 - 1 - if ltr_t is emoji and prev_ltr is emoji
-        // 1 0 - 1 - if ltr_t is not emoji and prev_ltr is not emoji
-        // 1 1 - 0 - if ltr_t is not emoji and prev_ltr is emoji
-        if (ltr_type && ((ltr_t < 0x1F000) ^ (prev_ltr >= 0x1F000))) {
+        if (ltr_type) {
             if (ltr_t > max_ord)
                 max_ord = ltr_t;
+            if (prev_ltr >= 0x1F000) {
+                process_word(lang, word, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+                word.clear();
+                word_buf.clear();
+                word_buf_count = 0;
+                max_ord = ltr_t;
+            }
             if (is_spaceless_lang && ltr_t > 127) {
                 word.clear();
                 if (i > 0 && is_word(prev_ltr))
@@ -711,20 +722,37 @@ void split_words(string& str2split, char *lang, bool is_spaceless_lang) {
                     if (word.length() < MAX_WORD_LEN && prev_ltr != '-') {
                         process_word(lang, word, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
                         word.clear();
-                        if (ltr_t == ' ' && prev_ltr < 0x1F000 && (i + utf8len) < str2split.length()
-                                && is_word(str2split[i + utf8len]))
-                            word.assign(L" ");
+                        if (ltr_t == ' ' && prev_ltr < 0x1F000) {
+                            int32_t nxt_ltr_t = 0;
+                            if ((i + utf8len) < str2split.length()) {
+                                int nxt_utf8len;
+                                nxt_ltr_t = transform_ltr(readUTF8(str2split, str2split.length(), i + utf8len, nxt_utf8len));
+                            }
+                            if (is_word(nxt_ltr_t))
+                                word.assign(L" ");
+                        }
                     } else
                         word.clear();
                 } else
                     word.clear();
             }
-            if (ltr_t > 0x1F000 || ltr_type) {
+            if (ltr_type) {
                 word.assign(1, (wchar_t) ltr_t);
                 max_ord = ltr_t;
             } else
                 max_ord = 0;
-            same_ltr_count = 0;
+            if (ltr_t > 0x1F000 || ltr_t == 8205) {
+                if (prev_ltr > 0x1F000 || prev_ltr == 8205)
+                    word.append(L" ");
+                word.append(1, (wchar_t) ltr_t);
+                if (max_ord < ltr_t)
+                    max_ord = ltr_t;
+                if (prev_ltr == ltr_t && same_ltr_count > -1)
+                    same_ltr_count++;
+                else
+                    same_ltr_count = -1;
+            } else
+                same_ltr_count = 0;
             is_compound = false;
         }
         prev_ltr = ltr_t;
@@ -768,11 +796,15 @@ void processPost(string& utf8body) {
     //if (!is_spaceless_lang)
     //    return;
 
-    //    cout << utf8body << endl;
     //    cout << lang_code << endl;
+    cout << "Body: [" << utf8body << "]" << endl;
 
     split_words(utf8body, lang_code, is_spaceless_lang);
 
+        if (line_count > 100000)
+            exit(1);
+
+/*
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX || INSERT_INTO_SQLITE_BLASTER) {
             cache_stats stats = ix_obj->get_cache_stats();
@@ -825,7 +857,7 @@ void processPost(string& utf8body) {
             // }
         }
     }
-
+*/
     //if (utf8body.find("hey y’all, i’m georgia!") != string::npos)
     //    exit(1);
 
@@ -852,12 +884,11 @@ void processOutput(void* buf, size_t len) {
     char *working_buf = (char *) buf;
     char *lf_pos = (char *) memchr(working_buf, 10, len);
     if (remain_buf.size() > 0 && lf_pos != NULL) {
-        remain_buf.insert(remain_buf.end()-1, working_buf, lf_pos + 1);
-        remain_buf[remain_buf.size()-1] = '\0';
+        remain_buf.append(working_buf, lf_pos - working_buf);
         rapidjson::Document d;
         line_count++;
         if (line_count >= start_at) {
-            if (!d.ParseInsitu((char *) &remain_buf[0]).HasParseError()) {
+            if (!d.Parse(remain_buf.c_str()).HasParseError()) {
                 //cout << d["body"].GetString() << endl;
                 //cout << "<<---------------- End of body ----------------->>" << endl;
                 processPost(d);
@@ -870,6 +901,7 @@ void processOutput(void* buf, size_t len) {
         }
         remain_buf.erase(remain_buf.begin(), remain_buf.end());
         len -= (lf_pos - working_buf);
+        len--;
         working_buf = lf_pos + 1;
         lf_pos = (char *) memchr(working_buf, 10, len);
     }
@@ -895,10 +927,12 @@ void processOutput(void* buf, size_t len) {
         lf_pos = (char *) memchr(working_buf, 10, len);
     }
     if (len) {
-        remain_buf.insert(remain_buf.end() - (remain_buf.begin() == remain_buf.end() ? 0 : 1), working_buf, working_buf + len);
-        //string s(&remain_buf[0], remain_buf.size());
-        //cout << s << endl;
-        //cout << "<<---------------- End ----------------->>" << endl;
+        remain_buf.append(working_buf, len);
+        // string s(&remain_buf[0], remain_buf.size());
+        // if (s.find("God damn: How's this") != s.npos) {
+        //     cout << s << endl;
+        //     cout << "<<---------------- End ----------------->>" << endl;
+        // }
     }
 }
 
@@ -975,7 +1009,29 @@ static void decompressFile_orDie(const char* fname)
 int main(int argc, const char** argv)
 {
     const char* const exeName = argv[0];
- 
+
+        string s = "We could almost make a thread to make it easier for those who is interested in the actual topic, however I will say sorry for going off the rails here, I sadly tend to get quite caught up when I end up in a discussion. I also have to say sorry for all of the typos and such, I lack a correcting program on my computer and English is not my native language. \n\n\n"
+"The quote should work quite well as the order was unclear. Edmure is still beneath Robb and does what he is commanded, so he should be looked upon as a soldier even thought he commands the forces of RR.\n\n\n"
+"Anyways as of the order, it is pretty unclear to me. It does not say anything about not engaging the lannisters. Edmure was never informed  by Robb what the order **hold Riverrun** really meant, and that is a crucial mistake no matter how you look on it. I would have blamed Edmure if the order was **Holder Riverrun only if it is attacked, but otherwise leave Tywin to march through your lands and kill your smallfolks.**\n\n\n"
+"Robb worked on the assumption that people would understand the plan that he made *after* leaving RR\n\n\n"
+"It's not exactly obvious either. For all Edmure knows the lannisters still hold the two passes out of the Westerlands, unless you go far to the south of Lannisport. Robb looked like he was trapped there. And Robb only had 6,000 horse. Tywin probably had more, as well as lots of foot, including archers who can be lethal to horsemen without footmen to guard them etc. Tywin still had most of the castles in the west, would be able to raise more men etc. Why should Edmure guess Robb wanted to confront Tywin in the west. It doesn't make much sense before it's explained by the Blackfish. \n\n\n"
+"Anyways we know that the Tyrells must have been already preparing to march of KL to support it, the question is really if they would have done it even thought Tywin wasn’t with them.  If that is so it would not matter if Tywin marched into the Westerlands.  \n\n\n"
+"Anyways my question is how you can blame Edmure for doing what he did on such vague orders when he was not informed better? If it is due to blaming him for the RW, then you should remember that he was sacrificing himself to a Frey to attempt to mend the bond that his liege lord managed to shatter,  it is also important to remember that the Young Wolf lost loads of horsemen by fucking over the Freys (and moral of troops) so even if Tywin went into the trap he would outnumber the Young Wolf, and probably be awaiting some sort of engagement seeing as he gets report where the Young Wolf ravage his lands.  There is also the fine opportunity of  Tywin winning, and even then people would blame Edmure. It is important to remember these three things about Edmure: \n\n\n"
+"1.	We only have Cat`s PoV from the battle, which are second hand and her views on him have been affected by always remembering him as clumsy, naïve and all that shit.\n"
+"2.	He is to good a person to really be a lord, however he still did as he was ordered.  To *hold Riverrun* , he had not gained any new orders such as letting Tywin march through his lands because Robb or Blackfish did not dare sending a raven or a outrider.\n"
+"3.	**He cannot read minds and would therefore not know about this “masterplan” that would only give the small northern army some defense advantage, making Tywin bleed in the engagement, but we have no idea if they would have won.**\n\n\n"
+"Heck, we do not even know if the Blackfish or the Young Wolf really had a plan, it could be something that they made up in an attempt to win back some of the allies that Robb married by his useless political moves. Or else they come off as to drunk on their former glory that they think they would have won the fight no matter how many more men the Lannisters had. \n";
+
+        // s = "Good boy 👨🏻‍🌾🌎💜how are you?";
+        // s = "💜how are";
+        // //s = "Good 🌎💜";
+        // //s = "树倒猢狲散水能载舟";
+        // //split_words(s, "zh", true);
+        // //s = "Hello, World \"How\" is Lewis' health now-adays";
+        // s = "I LOVE YOU GUYS SO MUCHHHHHHHHHH♥ ";
+        // split_words(s, "en", false);
+        // return 0;
+
     if (argc<3) {
         fprintf(stderr, "wrong arguments\n");
         fprintf(stderr, "usage:\n");
