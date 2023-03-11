@@ -413,7 +413,9 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     words_generated++;
 
     string utf8word = myconv.to_bytes(word);
-    cout << "[" << utf8word << "], " << word.length() << endl;
+
+    //cout << "[" << utf8word << "], " << word.length() << endl;
+
     insert_into_db(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_idx(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
     insert_into_sqlite_blaster(utf8word.c_str(), utf8word.length(), lang_code, is_word, "r");
@@ -797,14 +799,14 @@ void processPost(string& utf8body) {
     //    return;
 
     //    cout << lang_code << endl;
-    cout << "Body: [" << utf8body << "]" << endl;
+    //cout << "Body: [" << utf8body << "]" << endl;
 
     split_words(utf8body, lang_code, is_spaceless_lang);
 
-        if (line_count > 100000)
-            exit(1);
+        //if (line_count > 100000)
+        //    exit(1);
 
-/*
+
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX || INSERT_INTO_SQLITE_BLASTER) {
             cache_stats stats = ix_obj->get_cache_stats();
@@ -857,7 +859,7 @@ void processPost(string& utf8body) {
             // }
         }
     }
-*/
+
     //if (utf8body.find("hey y’all, i’m georgia!") != string::npos)
     //    exit(1);
 
