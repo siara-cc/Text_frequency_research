@@ -8,6 +8,7 @@ using System.Collections;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using ZstdSharp;
+using FastText.NetWrapper;
 
 static class SBExtension {
     public static int IndexOf(
@@ -294,16 +295,11 @@ class Reddit_Read_ZStd
         }
     }
 
-    [DllImport("../FastText_Lang_bindings/CPP/fasttext_predict.so", EntryPoint = "load_model")]
-    public extern static void load_model(byte[] filename);
-
-    [DllImport("../FastText_Lang_bindings/CPP/fasttext_predict.so", EntryPoint = "predict")]
-    public extern static void predict(byte[] input, byte[] output);
-
     public static int Main(string[] args)
     {
 
-        load_model(Encoding.UTF8.GetBytes("lid.176.bin"));
+        var fastText = new FastTextWrapper();
+        fastText.LoadModel("../lid.176.bin");
 
         // string s;
         // // s = "Good boy 👨🏻‍🌾🌎💜";
@@ -391,15 +387,17 @@ class Reddit_Read_ZStd
                     var lang = "en";
                     try {
                         byte[] output = new byte[30];
-                        predict(Encoding.UTF8.GetBytes(body_str.ToString()), output);
-                        lang = Encoding.UTF8.GetString(output, 0, Array.IndexOf<byte>(output, (byte) '\0'));
-                        lang = lang.Substring(lang.LastIndexOf('_') + 1);
+                        Prediction p = fastText.PredictSingle(body_str);
+                        if (p.Label.Length > 9)
+                            lang = p.Label.Substring(9);
                     } catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
                     }
 
                     Console.Write("Body: [");
+                    Console.Write(lang);
+                    Console.Write("], [");
                     Console.Write(body_str);
                     Console.WriteLine("]");
 

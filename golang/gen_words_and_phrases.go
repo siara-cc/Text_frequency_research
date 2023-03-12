@@ -8,6 +8,9 @@ package main
 */
 import "C"
 import (
+	"bytes"
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -18,6 +21,7 @@ import (
 	"unicode/utf8"
 	"unsafe"
 
+	badger "github.com/dgraph-io/badger/v3"
 	"github.com/klauspost/compress/zstd"
 )
 
@@ -27,6 +31,10 @@ var num_grams = 0
 var total_word_lens = 0
 var line_count = 0
 var lines_processed = 0
+
+var db *badger.DB
+var badger_txn *badger.Txn
+var value_bytes = make([]byte, 4)
 
 func insert_data(lang_code string, word string, is_word string, max_ord int) {
 
@@ -39,6 +47,27 @@ func insert_data(lang_code string, word string, is_word string, max_ord int) {
 	}
 	if word_len == 1 && max_ord < 4256 {
 		return
+	}
+	key := lang_code + " " + word
+	item, err := badger_txn.Get([]byte(key))
+	var count uint32 = 1
+	if err != badger.ErrKeyNotFound {
+		item.Value(func(v []byte) error {
+			copy(value_bytes, v)
+			return nil
+		})
+		count = binary.BigEndian.Uint32(value_bytes)
+		count++
+	}
+	binary.BigEndian.PutUint32(value_bytes, count)
+	err1 := badger_txn.Set([]byte(key), value_bytes)
+	if err1 != nil {
+		fmt.Printf("Error setting key: %d, %s", line_count, err1.Error())
+		os.Exit(1)
+	}
+	if line_count >= 25 {
+		badger_txn.Commit()
+		badger_txn = db.NewTransaction(true)
 	}
 
 	//fmt.Printf("[%s], %d\n", word, len(word))
@@ -314,7 +343,7 @@ func split_words(in_str string, lang string, is_spaceless_lang bool) {
 
 func main() {
 
-	model_name := C.CString("lid.176.bin")
+	model_name := C.CString("../lid.176.bin")
 	C.load_model(model_name)
 	defer C.free(unsafe.Pointer(model_name))
 
@@ -329,6 +358,15 @@ func main() {
 	// split_words(s, "en", false)
 	// return
 
+	opts := badger.DefaultOptions("./badger")
+	db_local_var, err := badger.Open(opts)
+	db = db_local_var
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	badger_txn = db.NewTransaction(true)
+
 	var infile = os.Args[1]
 	inputFile, err := os.Open(infile)
 	if err != nil {
@@ -341,7 +379,7 @@ func main() {
 	}
 	defer zstdReader.Close()
 
-	// var prev_chunk = new(bytes.Buffer)
+	var prev_chunk = new(bytes.Buffer)
 	line_count = 1
 
 	/*        #conn = mysql.connector.connect(
@@ -361,11 +399,11 @@ func main() {
 
 	var start_time = time.Now()
 	var buffer []byte = make([]byte, 100)
-	// var json_obj map[string]interface{}
+	var json_obj map[string]interface{}
 
 	debug.SetMemoryLimit(3 * 1024 * 1024 * 1024)
 
-	for {
+	for C.kbhit() == 0 {
 		read_count, err := zstdReader.Read(buffer)
 		if err != nil && err != io.EOF {
 			log.Fatal(err)
@@ -373,46 +411,46 @@ func main() {
 		if read_count <= 0 {
 			break
 		}
-		// var cr_pos = bytes.IndexByte(buffer, 10)
-		// if cr_pos == -1 || cr_pos >= read_count {
-		// 	prev_chunk.Write(buffer[0:read_count])
-		// 	continue
-		// }
-		// if cr_pos > 0 {
-		// 	prev_chunk.Write(buffer[0:cr_pos])
-		// }
-		// json.Unmarshal(prev_chunk.Bytes(), &json_obj)
-		// prev_chunk.Truncate(0)
-		// prev_chunk.Write(buffer[cr_pos+1 : read_count])
+		var cr_pos = bytes.IndexByte(buffer, 10)
+		if cr_pos == -1 || cr_pos >= read_count {
+			prev_chunk.Write(buffer[0:read_count])
+			continue
+		}
+		if cr_pos > 0 {
+			prev_chunk.Write(buffer[0:cr_pos])
+		}
+		json.Unmarshal(prev_chunk.Bytes(), &json_obj)
+		prev_chunk.Truncate(0)
+		prev_chunk.Write(buffer[cr_pos+1 : read_count])
 		line_count++
-		// if json_obj["body"] == nil {
-		// 	continue
-		// }
-		// var body_str string = json_obj["body"].(string)
-		// var author string = "null"
-		// if json_obj["author"] != nil {
-		// 	author = json_obj["author"].(string)
-		// }
-		// var distinguished string = "null"
-		// if json_obj["distinguished"] != nil {
-		// 	author = json_obj["distinguished"].(string)
-		// }
-		// if body_str == "[deleted]" || author == "AutoModerator" || distinguished == "moderator" || strings.Contains(author, "bot") || strings.Contains(author, "Bot") || strings.Contains(body_str, "I am a bot") || strings.Contains(body_str, "was posted by a bot") {
-		// 	continue
-		// }
-		// ptr := C.malloc(C.sizeof_char * 20)
-		// defer C.free(unsafe.Pointer(ptr))
-		// c_body_str := C.CString(body_str)
-		// defer C.free(unsafe.Pointer(c_body_str))
-		// C.predict(c_body_str, (*C.char)(ptr))
-		// lang := C.GoString((*C.char)(ptr))
+		if json_obj["body"] == nil {
+			continue
+		}
+		var body_str string = json_obj["body"].(string)
+		var author string = "null"
+		if json_obj["author"] != nil {
+			author = json_obj["author"].(string)
+		}
+		var distinguished string = "null"
+		if json_obj["distinguished"] != nil {
+			author = json_obj["distinguished"].(string)
+		}
+		if body_str == "[deleted]" || author == "AutoModerator" || distinguished == "moderator" || strings.Contains(author, "bot") || strings.Contains(author, "Bot") || strings.Contains(body_str, "I am a bot") || strings.Contains(body_str, "was posted by a bot") {
+			continue
+		}
+		ptr := C.malloc(C.sizeof_char * 20)
+		defer C.free(unsafe.Pointer(ptr))
+		c_body_str := C.CString(body_str)
+		defer C.free(unsafe.Pointer(c_body_str))
+		C.predict(c_body_str, (*C.char)(ptr))
+		lang := C.GoString((*C.char)(ptr))
 
 		// fmt.Printf("Body: [")
 		// fmt.Printf(body_str)
 		// fmt.Printf("]\n")
 
-		// var is_spaceless_lang bool = lang == "zh" || lang == "ja" || lang == "ko" || lang == "th" || lang == "my"
-		// split_words(body_str, lang, is_spaceless_lang)
+		var is_spaceless_lang bool = lang == "zh" || lang == "ja" || lang == "ko" || lang == "th" || lang == "my"
+		split_words(body_str, lang, is_spaceless_lang)
 
 		// #output_file.write(obj["id"].encode("unicode_escape"))
 		// #output_file.write(b',')
@@ -436,6 +474,8 @@ func main() {
 		}
 	}
 	// #output_file.close()
+
+	badger_txn.Commit()
 
 	//conn.commit();
 	/*

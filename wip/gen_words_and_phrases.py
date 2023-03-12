@@ -27,40 +27,12 @@ cctz = zstd.ZstdDecompressor(None, 2147483648, 0)
 #outfile = "output.zstd"
 
 prev_chunk = bytearray(0)
-line_num = 1
-
-def is_word(ltr):
-    if ord(ltr) > 128:
-        return True
-    if ltr in ['_', '\'']:
-        return True
-    if (ltr >= 'a' and ltr <= 'z') or (ltr >= 'A' and ltr <= 'Z') or (ltr >= '0' and ltr <= '9'):
-        return True
-    return False
-
-def split_words(str2split, lang, is_spaceless_lang):
-    str2split = str2split.lower()
-    word = ""
-    word_arr = []
-    strlen = len(str2split)
-    for i in range(strlen):
-        ltr = str2split[i]
-        if is_word(ltr):
-            if is_spaceless_lang and ord(ltr) > 127:
-                word_arr.append((" " if len(word_arr) > 0 else "") + ltr)
-                word = ""
-            else:
-                word += ltr
-        else:
-            if len(word) > 0:
-                if word.find("reddit") > -1 or word.find("moderator") > -1 or (word.count(word[-1]) > len(word)-2 and len(word) > 2):
-                    word = (word[1:] if word[0] == ' ' else word) + "~"
-                word_arr.append(word)
-                if ltr == ' ' and i + 1 < strlen and is_word(str2split[i + 1]):
-                    word = " "
-                else:
-                    word = ""
-    return word_arr
+int num_words = 0;
+int num_phrases = 0;
+int num_grams = 0;
+long total_word_lens = 0;
+long line_count = 0;
+long lines_processed = 0;
 
 def insert_into_db(conn, lang, word, is_word):
     if len(word) == 0:  # ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
@@ -79,6 +51,217 @@ def insert_into_db(conn, lang, word, is_word):
         if word_with_spc != ' ':
             conn.execute(sql_str, [word_with_spc, lang, 1, is_word, "r"])
             #crsr.execute(sql_str, (word_with_spc, lang, 1, is_word, "r"))
+
+def transform_ltr(ltr):
+    if (ltr >= 65 and ltr <= 90):
+        return ltr + (ord('a') - ord('A'))
+    if (ltr < 127):
+        return ltr
+    if (ltr < 8212 || ltr > 8288):
+        return ltr
+    match ltr:
+        case 8212:
+            ltr = 45
+        case 8216:
+            ltr = 39
+        case 8217:
+            ltr = 39
+        case 8220:
+            ltr = 34
+        case 8221:
+            ltr = 34
+        case 8223:
+            ltr = 34
+        case 8230:
+            ltr = 32
+        case 8288:
+            ltr = 32
+    return ltr
+
+def is_word(ltr):
+    if ((ltr >= 97 and ltr <= 122) or (ltr >= 65 and ltr <= 90)):
+        return 1
+    if (ltr > 128 and ltr < 0x1F000 and ltr != 8205):
+        return 2
+    # _ or ' or -
+    if (ltr == 95 or ltr == 39 or ltr == 45)
+        return 3
+    if (ltr >= 48 and ltr <= 57)
+        return 4
+    return 0
+
+def insert_grams_in_word(lang_code, word_to_insert, word_len, max_ord):
+    min_gram_len = 2 if max_ord > 2047 else (3 if max_ord > 126 else 5)
+    if (word_len <= min_gram_len):
+        return
+    for ltr_pos in range(word_len - min_gram_len + 1):
+        for (gram_len in range(min_gram_len, (word_len if ltr_pos == 0 else word_len - ltr_pos + 1)):
+            num_grams = num_grams + 1
+            #if word_to_insert[ltr_pos:gram_len] in ['to','of'] and langw=='en' and min_gram_len == 2:
+            #    print(word_to_insert, max_ord, langw)
+            string gram = word_to_insert[ltr_pos, ltr_pos + gram_len]
+            insert_data(lang_code, gram, "n", max_ord);
+
+const MAX_WORDS_PER_PHRASE = 5
+def process_word_buf_rest(word_buf, word_buf_count, max_ord_phrase, lang_code, is_spaceless_lang):
+    if (word_buf_count < 3):
+        return
+    spc_pos = 0;
+    for n in range(1, word_buf_count - 1):
+        wstr = word_buf[n:].join()
+        insert_data(lang_code, wstr, "y", max_ord_phrase);
+        num_phrases = num_phrases + 1
+
+def process_word(lang_code, word, word_buf, word_buf_count, ref int max_ord_phrase, int max_ord, bool is_spaceless_lang, bool is_compound) {
+    if (word.Length == 0):
+        return
+    if (is_spaceless_lang and max_ord < 2048):
+        is_spaceless_lang = False
+    if (word[0] == ' ' or word[0] == 8205):
+        if (word_buf_count == MAX_WORDS_PER_PHRASE) {
+            if (word[0] == ' ' && (is_spaceless_lang || char.IsSurrogate(word[1]) || word_buf[1] == 8205))
+                word_buf.Remove(0, 1);
+            else {
+                int spc_pos = word_buf.IndexOf(" ");
+                word_buf.Remove(0, spc_pos + 1);
+            }
+            word_buf_count--;
+        }
+        if (max_ord > max_ord_phrase)
+            max_ord_phrase = max_ord;
+        if (word[0] == ' ' && (is_spaceless_lang || char.IsSurrogate(word[1]) || word[1] == 8205))
+            word_buf.Append(word.ToString(1, word.Length - 1));
+        else
+            word_buf.Append(word);
+        word_buf_count++;
+        insert_data(lang_code, word_buf.ToString(), "y", max_ord_phrase);
+        num_phrases++;
+        process_word_buf_rest(word_buf, word_buf_count, max_ord_phrase, lang_code, is_spaceless_lang);
+    } else {
+        word_buf.Clear(); word_buf.Append(word);
+        word_buf_count = 1;
+        max_ord_phrase = max_ord;
+    }
+    if (word[0] == ' ')
+        word.Remove(0, 1);
+    if (word.Length == 0 || word[0] == 8205)
+        return;
+    num_words++;
+    insert_data(lang_code, word.ToString(), "y", max_ord);
+    //if (word.Length == 0)
+    //    Console.WriteLine(word_buf);
+    if (!is_compound && word.Length > 0 && (word[0] < '0' || word[0] > '9') && is_word(word[0]) > 0 && word.Length < 16 && !is_spaceless_lang)
+        insert_grams_in_word(lang_code, word.ToString(), word.Length, max_ord);
+}
+
+const int MAX_WORD_LEN = 21;
+void split_words(string in_str, string lang, bool is_spaceless_lang) {
+    // Console.Write("String: [");
+    // Console.Write(str2split);
+    // Console.WriteLine("]");
+    var word = new StringBuilder();
+    int max_ord = 0;
+    int same_ltr_count = 0;
+    int prev_ltr = 0;
+    bool is_compound = false;
+    var word_buf = new StringBuilder();
+    int word_buf_count = 0;
+    int max_ord_phrase = 0;
+    int[] str2split = GetCodePoints(in_str);
+    for (int i = 0; i < str2split.Length; i++) {
+
+        if (i > 0 && str2split[i] == '/' && (str2split[i-1] == 'r' || str2split[i-1] == 'u')
+                && (i == 1 || (i > 1 && (str2split[i-2] == ' ' || str2split[i-2] == '/'
+                            || str2split[i-2] == '\n' || str2split[i-2] == '|')))) {
+            while (i < str2split.Length - 1 && is_word(transform_ltr(str2split[++i])) > 0);
+            prev_ltr = 0;
+            max_ord = 0;
+            same_ltr_count = 0;
+            word.Clear();
+            continue;
+        }
+        int ltr_t = transform_ltr(str2split[i]);
+        int ltr_type = is_word(ltr_t);
+        if (ltr_type > 0) {
+            if (ltr_t > max_ord)
+                max_ord = ltr_t;
+            if (prev_ltr >= 0x1F000) {
+                process_word(lang, word, word_buf, ref word_buf_count, ref max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+                word.Clear();
+                word_buf.Clear();
+                word_buf_count = 0;
+                max_ord = ltr_t;
+            }
+            if (is_spaceless_lang && ltr_t > 127) {
+                word.Clear();
+                if (i > 0 && is_word(prev_ltr) == 2)
+                    word.Append(" ");
+                word.Append((char)ltr_t);
+                process_word(lang, word, word_buf, ref word_buf_count, ref max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+                //word_arr.push_back(word);
+                word.Clear();
+            } else {
+                if (prev_ltr > 0x1F000)
+                    word.Clear();
+                word.Append((char)ltr_t);
+                if (ltr_type == 3)
+                    is_compound = true;
+                if (word.Length > (word[0] == ' ' ? 2 : 1)) {
+                    if (prev_ltr == ltr_t && same_ltr_count > -1)
+                        same_ltr_count++;
+                    else
+                        same_ltr_count = -1;
+                }
+            }
+        } else {
+            if (word.Length > 0) {
+                if (word.IndexOf("reddit") == -1
+                                && word.IndexOf("moderator") == -1
+                                && same_ltr_count < 4) {
+                    if (word.Length < MAX_WORD_LEN && prev_ltr != '-') {
+                        process_word(lang, word, word_buf, ref word_buf_count, ref max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+                        word.Clear();
+                        if (ltr_t == ' ' && prev_ltr < 0x1F000 && (i + 1) < str2split.Length
+                                && is_word(transform_ltr(str2split[i + 1])) > 0) {
+                            word.Clear(); word.Append(" ");
+                        }
+                    } else
+                        word.Clear();
+                } else
+                    word.Clear();
+            }
+            if (ltr_type > 0) {
+                word.Clear();
+                word.Append((char)ltr_t);
+                max_ord = ltr_t;
+            } else
+                max_ord = 0;
+            if (ltr_t > 0x1F000 || ltr_t == 8205) {
+                if (prev_ltr > 0x1F000 || prev_ltr == 8205) {
+                    word.Clear(); word.Append(" ");
+                }
+                word.Append(char.ConvertFromUtf32(ltr_t));
+                if (max_ord < ltr_t)
+                    max_ord = ltr_t;
+                if (prev_ltr == ltr_t && same_ltr_count > -1)
+                    same_ltr_count++;
+                else
+                    same_ltr_count = -1;
+            } else
+                same_ltr_count = 0;
+            is_compound = false;
+        }
+        prev_ltr = ltr_t;
+    }
+    if (word.Length > 0) {
+        if (word.IndexOf("reddit") == -1
+                        && word.IndexOf("moderator") == -1
+                        && same_ltr_count < 4) {
+            if (word.Length < MAX_WORD_LEN && prev_ltr != '-')
+                process_word(lang, word, word_buf, ref word_buf_count, ref max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+        }
+    }
+}
 
 tran_dict = {8216: 39, 8217: 39, 8219: 39, 8220: 34, 8221: 34, 8223: 34, 8288: 32, 8230: 32}
 
@@ -126,42 +309,6 @@ with open(infile, "rb") as fh:
                 pass
             is_spaceless_lang = lang in ['zh', 'ja', 'ko', 'th', 'my']
             word_arr = split_words(str2split, lang, is_spaceless_lang)
-            for word_pos in range(len(word_arr)):
-                for n in range(1, len(word_arr)-word_pos+1):
-                    if n > 5:
-                        break
-                    word_to_insert = word_arr[word_pos]
-                    is_phrase = False
-                    for i in range(1, n):
-                        if word_arr[word_pos + i][0] == ' ':
-                            word_to_insert += word_arr[word_pos + i][(1 if is_spaceless_lang else 0):]
-                            is_phrase = True
-                        else:
-                            word_to_insert = ""
-                            break
-                    word_to_insert = word_to_insert.strip()
-                    word_len = len(word_to_insert)
-                    max_ord = 0
-                    for ltr in range(len(word_to_insert)):
-                        max_ord = max(ord(word_to_insert[ltr]), max_ord)
-                    if word_len > 0 and word_to_insert[-1] != '~' and word_len < 21 and \
-                            (word_len > 2 or (word_len == 1 and max_ord > 4255) \
-                             or (word_len == 2 and max_ord > 127)):
-                        langw = "en"
-                        #try:
-                        #    langw = fmodel.predict(word_to_insert)[0][0][-2:]
-                        #except Exception:
-                        #    pass
-                        if lang == langw:
-                            #insert_into_db(conn, lang, word_to_insert, "y")
-                            min_gram_len = 2 if max_ord > 2047 else (3 if max_ord > 126 else 5)
-                            if not is_phrase and word_len > min_gram_len and word_len < 16 and not is_spaceless_lang:
-                                for ltr_pos in range(word_len - min_gram_len + 1):
-                                    for gram_len in range(min_gram_len, word_len if ltr_pos == 0 else word_len - ltr_pos + 1):
-                                        #if word_to_insert[ltr_pos:gram_len] in ['to','of'] and langw=='en' and min_gram_len == 2:
-                                        #    print(word_to_insert, max_ord, langw)
-                                        pass
-                                        #insert_into_db(conn, lang, word_to_insert[ltr_pos:gram_len], "n")
 
             #output_file.write(obj["id"].encode("unicode_escape"))
             #output_file.write(b',')
