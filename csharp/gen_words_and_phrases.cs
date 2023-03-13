@@ -58,10 +58,10 @@ class Reddit_Read_ZStd
         if (word_len == 1 && max_ord < 4256)
             return;
 
-        Console.Write("[");
-        Console.Write(word);
-        Console.Write("], ");
-        Console.WriteLine(word.Length);
+        // Console.Write("[");
+        // Console.Write(word);
+        // Console.Write("], ");
+        // Console.WriteLine(word.Length);
     }
 
     static int transform_ltr(int ltr) {
@@ -360,6 +360,7 @@ class Reddit_Read_ZStd
                         continue;
                     prev_chunk = new MemoryStream();
                     prev_chunk.Write(ba, cr_pos + 1, iRead - cr_pos - 1);
+                    line_count++;
                     JsonNode obj;
                     try {
                         obj = JsonNode.Parse(string_data);
@@ -368,7 +369,6 @@ class Reddit_Read_ZStd
                         Console.WriteLine(e.Message);
                         continue;
                     }
-                    line_count++;
                     if (obj["body"] == null)
                         continue;
                     var body_str = obj["body"].ToString();
@@ -395,11 +395,11 @@ class Reddit_Read_ZStd
                         Console.WriteLine(e.Message);
                     }
 
-                    Console.Write("Body: [");
-                    Console.Write(lang);
-                    Console.Write("], [");
-                    Console.Write(body_str);
-                    Console.WriteLine("]");
+                    // Console.Write("Body: [");
+                    // Console.Write(lang);
+                    // Console.Write("], [");
+                    // Console.Write(body_str);
+                    // Console.WriteLine("]");
 
                     bool is_spaceless_lang = lang.Equals("zh") || lang.Equals("ja") || lang.Equals("ko") || lang.Equals("th") || lang.Equals("my");
 
@@ -413,16 +413,16 @@ class Reddit_Read_ZStd
                     // #output_file.write(obj["body"].encode("unicode_escape"))
                     // #output_file.write(b'\n')
                     lines_processed++;
-                    if (line_count > 100000)
-                        return 0;
-                    /*if (line_count % 10000 == 0)
+                    // if (line_count > 100000)
+                    //     return 0;
+                    if (line_count % 10000 == 0)
                     {
                         //conn.commit();
-                        Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}", 
-                            line_num, (DateTime.Now - start_time).Seconds, (num_words+num_phrases+num_grams), num_words, num_phrases, num_grams);
+                        Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}",
+                            line_count, (double) (DateTime.Now - start_time).Seconds, (num_words+num_phrases+num_grams), num_words, num_phrases, num_grams);
                         start_time = DateTime.Now;
                         //#output_file.flush()
-                    }*/
+                    }
                 }
             }
         }
