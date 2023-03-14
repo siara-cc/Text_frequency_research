@@ -96,6 +96,9 @@ sqlite_index_blaster *ix_obj;
 //stager *ix_obj;
 int start_at = 0;
 
+FILE *log_fp;
+int log_fd;
+
 int kbhit() {
     static const int STDIN = 0;
     static int initialized = 0;
@@ -413,6 +416,10 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
     words_generated++;
 
     string utf8word = myconv.to_bytes(word);
+
+    fprintf(log_fp, "[%s], [%s], %d\n", lang_code, utf8word.c_str(), utf8word.length());
+    fflush(log_fp);
+    //fsync(log_fd);
 
     // cout << "[" << utf8word << "], " << word.length() << endl;
 
@@ -1054,6 +1061,14 @@ int main(int argc, const char** argv)
         processPost(s);
         exit(1);
     }
+    string log_name(argv[1]);
+    log_name += ".log";
+    log_fp = fopen(log_name.c_str(), "wb");
+    if (log_fp == NULL) {
+        perror("Could not create log file: ");
+        return 1;
+    }
+    log_fd = fileno(log_fp);
     const int cache_size = atoi(argv[2]);
     const int page_size = atoi(argv[3]);
     const char* const outFilename = argv[4];
@@ -1326,6 +1341,7 @@ int main(int argc, const char** argv)
     }
 #endif
 
+    fclose(log_fp);
     return 0;
 
 }
