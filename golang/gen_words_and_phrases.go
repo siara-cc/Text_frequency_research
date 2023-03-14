@@ -25,6 +25,8 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+const INSERT_INTO_BADGER bool = false
+
 var num_words = 0
 var num_phrases = 0
 var num_grams = 0
@@ -38,7 +40,7 @@ var value_bytes = make([]byte, 4)
 
 func insert_data(lang_code string, word string, is_word string, max_ord int) {
 
-	var word_len = len(word)
+	var word_len = utf8.RuneCountInString(word)
 	if word_len == 0 || word[word_len-1] == '~' {
 		return
 	}
@@ -48,30 +50,83 @@ func insert_data(lang_code string, word string, is_word string, max_ord int) {
 	if word_len == 1 && max_ord < 4256 {
 		return
 	}
-	key := lang_code + " " + word
-	item, err := badger_txn.Get([]byte(key))
-	var count uint32 = 1
-	if err != badger.ErrKeyNotFound {
-		item.Value(func(v []byte) error {
-			copy(value_bytes, v)
-			return nil
-		})
-		count = binary.BigEndian.Uint32(value_bytes)
-		count++
-	}
-	binary.BigEndian.PutUint32(value_bytes, count)
-	err1 := badger_txn.Set([]byte(key), value_bytes)
-	if err1 != nil {
-		fmt.Printf("Error setting key: %d, %s", line_count, err1.Error())
-		os.Exit(1)
-	}
-	if line_count >= 25 {
-		badger_txn.Commit()
-		badger_txn = db.NewTransaction(true)
+
+	// fmt.Printf("[%s], %d\n", word, word_len)
+
+	if INSERT_INTO_BADGER {
+		key := lang_code + " " + word
+		item, err := badger_txn.Get([]byte(key))
+		var count uint32 = 1
+		if err != badger.ErrKeyNotFound {
+			item.Value(func(v []byte) error {
+				copy(value_bytes, v)
+				return nil
+			})
+			count = binary.BigEndian.Uint32(value_bytes)
+			count++
+		}
+		binary.BigEndian.PutUint32(value_bytes, count)
+		err1 := badger_txn.Set([]byte(key), value_bytes)
+		if err1 != nil {
+			fmt.Printf("Error setting key: %d, %s", line_count, err1.Error())
+			os.Exit(1)
+		}
+		if line_count >= 25 {
+			badger_txn.Commit()
+			badger_txn = db.NewTransaction(true)
+		}
 	}
 
-	//fmt.Printf("[%s], %d\n", word, len(word))
+}
 
+func readUTF8(in_str string, str_len int, l int, utf8len *int) int {
+	var ret int
+	var lenutf8 int
+	str_len = len(in_str)
+	if utf8len == nil {
+		utf8len = &lenutf8
+	}
+	if (in_str[l] & 0x80) == 0 {
+		ret = int(in_str[l])
+		*utf8len = 1
+	} else {
+		if l < (str_len-1) && (in_str[l]&0xE0) == 0xC0 && (in_str[l+1]&0xC0) == 0x80 {
+			*utf8len = 2
+			ret = int(in_str[l] & 0x1F)
+			ret <<= 6
+			ret += int(in_str[l+1] & 0x3F)
+			if ret < 0x80 {
+				ret = 0
+			}
+		} else {
+			if l < (str_len-2) && (in_str[l]&0xF0) == 0xE0 && (in_str[l+1]&0xC0) == 0x80 && (in_str[l+2]&0xC0) == 0x80 {
+				*utf8len = 3
+				ret = int(in_str[l] & 0x0F)
+				ret <<= 6
+				ret += int(in_str[l+1] & 0x3F)
+				ret <<= 6
+				ret += int(in_str[l+2] & 0x3F)
+				if ret < 0x0800 {
+					ret = 0
+				}
+			} else {
+				if l < (str_len-3) && (in_str[l]&0xF8) == 0xF0 && (in_str[l+1]&0xC0) == 0x80 && (in_str[l+2]&0xC0) == 0x80 && (in_str[l+3]&0xC0) == 0x80 {
+					*utf8len = 4
+					ret = int(in_str[l] & 0x07)
+					ret <<= 6
+					ret += int(in_str[l+1] & 0x3F)
+					ret <<= 6
+					ret += int(in_str[l+2] & 0x3F)
+					ret <<= 6
+					ret += int(in_str[l+3] & 0x3F)
+					if ret < 0x10000 {
+						ret = 0
+					}
+				}
+			}
+		}
+	}
+	return ret
 }
 
 func transform_ltr(ltr int) int {
@@ -89,15 +144,23 @@ func transform_ltr(ltr int) int {
 		ltr = 45
 		break
 	case 8216:
+		ltr = 39
+		break
 	case 8217:
 		ltr = 39
 		break
 	case 8220:
+		ltr = 34
+		break
 	case 8221:
+		ltr = 34
+		break
 	case 8223:
 		ltr = 34
 		break
 	case 8230:
+		ltr = 32
+		break
 	case 8288:
 		ltr = 32
 		break
@@ -139,9 +202,10 @@ func insert_grams_in_word(lang_code string, word_to_insert string, word_len int,
 	var min_gram_len = 5
 	if max_ord > 2047 {
 		min_gram_len = 2
-	}
-	if max_ord > 126 {
-		min_gram_len = 3
+	} else {
+		if max_ord > 126 {
+			min_gram_len = 3
+		}
 	}
 	if word_len <= min_gram_len {
 		return
@@ -166,10 +230,10 @@ func process_word_buf_rest(word_buf string, word_buf_count int, max_ord_phrase i
 	var spc_pos = 0
 	for n := 1; n < word_buf_count-1; n++ {
 		var next_spc_pos = strings.Index(word_buf[spc_pos:], " ") + 1
-		if next_spc_pos == 0 {
+		if !is_spaceless_lang && next_spc_pos == 0 {
 			break
 		}
-		var wstr = iif_s(is_spaceless_lang || word_buf[0] > 127, string([]rune(word_buf)[n:]), word_buf[next_spc_pos+spc_pos:])
+		var wstr = iif_s(is_spaceless_lang || readUTF8(word_buf, 5, 0, nil) > 0x1F000, string([]rune(word_buf)[n:]), word_buf[next_spc_pos+spc_pos:])
 		insert_data(lang_code, wstr, "y", max_ord_phrase)
 		spc_pos += next_spc_pos
 		num_phrases++
@@ -185,7 +249,8 @@ func process_word(lang_code string, word *string, word_buf *string, word_buf_cou
 	}
 	if (*word)[0] == ' ' {
 		if *word_buf_count == MAX_WORDS_PER_PHRASE {
-			if (*word)[0] == ' ' && (is_spaceless_lang || (*word)[1] > 127) {
+			var utf8_val = readUTF8(*word, 5, 1, nil)
+			if (*word)[0] == ' ' && (is_spaceless_lang || utf8_val > 0x1F000 || utf8_val == 8205) {
 				_, size := utf8.DecodeRuneInString(*word_buf)
 				*word_buf = (*word_buf)[size:]
 			} else {
@@ -197,7 +262,8 @@ func process_word(lang_code string, word *string, word_buf *string, word_buf_cou
 		if max_ord > *max_ord_phrase {
 			*max_ord_phrase = max_ord
 		}
-		if (*word)[0] == ' ' && (is_spaceless_lang || (*word)[1] > 127) {
+		var utf8_val = readUTF8(*word, 5, 1, nil)
+		if (*word)[0] == ' ' && (is_spaceless_lang || utf8_val > 0x1F000 || utf8_val == 8205) {
 			*word_buf += (*word)[1:]
 		} else {
 			*word_buf += *word
@@ -282,7 +348,7 @@ func split_words(in_str string, lang string, is_spaceless_lang bool) {
 				if ltr_type == 3 {
 					is_compound = true
 				}
-				if len(word) > iif(word[0] == ' ', 2, 1) {
+				if len(word) > iif(word[0] == ' ', 3, 2) {
 					if prev_ltr == ltr_t && same_ltr_count > -1 {
 						same_ltr_count++
 					} else {
@@ -293,10 +359,10 @@ func split_words(in_str string, lang string, is_spaceless_lang bool) {
 		} else {
 			if len(word) > 0 {
 				if strings.Index(word, "reddit") == -1 && strings.Index(word, "moderator") == -1 && same_ltr_count < 4 {
-					if len(word) < MAX_WORD_LEN && prev_ltr != '-' {
+					if utf8.RuneCountInString(word) < MAX_WORD_LEN && prev_ltr != 45 { // '-'
 						process_word(lang, &word, &word_buf, &word_buf_count, &max_ord_phrase, max_ord, is_spaceless_lang, is_compound)
 						word = ""
-						if ltr_t == ' ' && prev_ltr < 0x1F000 && (i+1) < len(str2split) && is_word(transform_ltr(int(str2split[i+1]))) > 0 {
+						if ltr_t == 32 && prev_ltr < 0x1F000 && (i+1) < len(str2split) && is_word(transform_ltr(int(str2split[i+1]))) > 0 {
 							word = " "
 						}
 					} else {
@@ -334,7 +400,7 @@ func split_words(in_str string, lang string, is_spaceless_lang bool) {
 	}
 	if len(word) > 0 {
 		if strings.Index(word, "reddit") == -1 && strings.Index(word, "moderator") == -1 && same_ltr_count < 4 {
-			if len(word) < MAX_WORD_LEN && prev_ltr != '-' {
+			if utf8.RuneCountInString(word) < MAX_WORD_LEN && prev_ltr != 45 { // '-'
 				process_word(lang, &word, &word_buf, &word_buf_count, &max_ord_phrase, max_ord, is_spaceless_lang, is_compound)
 			}
 		}
@@ -347,25 +413,35 @@ func main() {
 	C.load_model(model_name)
 	defer C.free(unsafe.Pointer(model_name))
 
-	//var s = "Good boy 👨🏻‍🌾🌎💜"
-	//var s = "💜how are"
-	//var s = "Good 🌎💜"
-	//var s = "树倒猢狲散水能载舟"
-	//split_words(s, "zh", true)
-	//var s = "Hello, World \"How\" is Lewis' health now-adays"
-	//var s = "I LOVE YOU GUYS SO MUCHHHHHHHHHH♥ "
-	// var s = "Hello World how are you there?"
-	// split_words(s, "en", false)
+	// split_words("Good boy 👨🏻‍🌾🌎💜", "en", false)
+	// split_words("💜how are", "en", false)
+	// split_words("Good 🌎💜", "en", false)
+	// split_words("树倒猢狲散水能载舟", "zh", true)
+	// split_words("Hello, World \"How\" is Lewis' health now-adays", "en", false)
+	// split_words("I LOVE YOU GUYS SO MUCHHHHHHHHHH♥ ", "zh", true)
+	// split_words("Hello World how are you there?", "en", true)
+	// split_words("if you took £400 for", "en", false)
+	// split_words("“he hid", "en", false)
+	// split_words("until 改革开放 that", "zh", true)
+	// split_words("réussi à", "en", false)
+	// split_words("until 改革开放 that", "en", false)
+	// split_words("r/suicidewatch &gt;»»»»»&gt;", "id", false)
+	// split_words("notation \"x→−3^(−)\" means", "en", false)
+	// split_words("What are you implying‽", "en", false)
+	// split_words("Wool™", "en", false)
+	// split_words("to read かんばってください！", "en", false)
 	// return
 
-	opts := badger.DefaultOptions("./badger")
-	db_local_var, err := badger.Open(opts)
-	db = db_local_var
-	if err != nil {
-		log.Fatal(err)
+	if INSERT_INTO_BADGER {
+		opts := badger.DefaultOptions("./badger")
+		db_local_var, err := badger.Open(opts)
+		db = db_local_var
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+		badger_txn = db.NewTransaction(true)
 	}
-	defer db.Close()
-	badger_txn = db.NewTransaction(true)
 
 	var infile = os.Args[1]
 	inputFile, err := os.Open(infile)
@@ -433,7 +509,7 @@ func main() {
 		}
 		var distinguished string = "null"
 		if json_obj["distinguished"] != nil {
-			author = json_obj["distinguished"].(string)
+			distinguished = json_obj["distinguished"].(string)
 		}
 		if body_str == "[deleted]" || author == "AutoModerator" || distinguished == "moderator" || strings.Contains(author, "bot") || strings.Contains(author, "Bot") || strings.Contains(body_str, "I am a bot") || strings.Contains(body_str, "was posted by a bot") {
 			continue
@@ -444,10 +520,9 @@ func main() {
 		defer C.free(unsafe.Pointer(c_body_str))
 		C.predict(c_body_str, (*C.char)(ptr))
 		lang := C.GoString((*C.char)(ptr))
+		lang = lang[9:]
 
-		// fmt.Printf("Body: [")
-		// fmt.Printf(body_str)
-		// fmt.Printf("]\n")
+		// fmt.Printf("Body: [%s], [%s]\n", lang, body_str)
 
 		var is_spaceless_lang bool = lang == "zh" || lang == "ja" || lang == "ko" || lang == "th" || lang == "my"
 		split_words(body_str, lang, is_spaceless_lang)
@@ -475,7 +550,10 @@ func main() {
 	}
 	// #output_file.close()
 
-	badger_txn.Commit()
+	if INSERT_INTO_BADGER {
+		badger_txn.Commit()
+		db.Close()
+	}
 
 	//conn.commit();
 	/*

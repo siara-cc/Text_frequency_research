@@ -238,7 +238,7 @@ class Reddit_Read_ZStd
                     word.Append((char)ltr_t);
                     if (ltr_type == 3)
                         is_compound = true;
-                    if (word.Length > (word[0] == ' ' ? 2 : 1)) {
+                    if (word.Length > (word[0] == ' ' ? 3 : 2)) {
                         if (prev_ltr == ltr_t && same_ltr_count > -1)
                             same_ltr_count++;
                         else
@@ -255,7 +255,7 @@ class Reddit_Read_ZStd
                             word.Clear();
                             if (ltr_t == ' ' && prev_ltr < 0x1F000 && (i + 1) < str2split.Length
                                     && is_word(transform_ltr(str2split[i + 1])) > 0) {
-                                word.Clear(); word.Append(" ");
+                                word.Append(" ");
                             }
                         } else
                             word.Clear();
@@ -310,6 +310,8 @@ class Reddit_Read_ZStd
         // // s = "Hello, World \"How\" is Lewis' health now-adays";
         // s = "I LOVE YOU GUYS SO MUCHHHHHHHHHH♥ ";
         // split_words(s, "en", false);
+        // split_words("MILTON NOOOOOOOOOOOO", "en", false);
+        // split_words("to read かんばってください！", "en", false);
         // return 0;
 
         var infile = Environment.GetCommandLineArgs()[1];

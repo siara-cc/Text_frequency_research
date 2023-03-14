@@ -61,7 +61,7 @@ def insert_data(lang_code, word, is_word, max_ord):
         return
     if (word_len == 1 and max_ord < 4256):
         return
-    print("[%s], %d" % (word, word_len))
+    # print("[%s], %d" % (word, word_len))
 
 #tran_dict = {8212: 45, 8216: 39, 8217: 39, 8219: 39, 8220: 34, 8221: 34, 8223: 34, 8288: 32, 8230: 32}
 def transform_ltr(ltr):
@@ -219,7 +219,7 @@ def split_words(str2split, lang, is_spaceless_lang):
                 word.append(chr(ltr_t))
                 if (ltr_type == 3):
                     is_compound = True
-                if (len(word) > (2 if word[0] == ' ' else 1)):
+                if (len(word) > (3 if word[0] == ' ' else 2)):
                     if (prev_ltr == ltr_t and same_ltr_count > -1):
                         same_ltr_count = same_ltr_count + 1
                     else:
@@ -339,7 +339,7 @@ with open(infile, "rb") as fh:
                     or str2split.find("was posted by a bot") != -1):
                 continue
     
-            print("Body: [%s], [%s]" % (lang, str2split))
+            # print("Body: [%s], [%s]" % (lang, str2split))
 
             is_spaceless_lang = lang in ['zh', 'ja', 'ko', 'th', 'my']
             split_words(str2split, lang, is_spaceless_lang)
@@ -353,13 +353,13 @@ with open(infile, "rb") as fh:
             #output_file.write(obj["body"].encode("unicode_escape"))
             #output_file.write(b'\n')
             lines_processed = lines_processed + 1
-            if (line_count > 100000):
-               break
-            # if line_count % 10000 == 0:
-            #     #conn.commit()
-            #     print("%d, %.2f, %d, %d, %d, %d" % (line_count, time.time() - start_time, (num_words+num_phrases+num_grams), num_words, num_phrases, num_grams))
-            #     start_time = time.time()
-            #     #output_file.flush()
+            # if (line_count > 100000):
+            #    break
+            if line_count % 10000 == 0:
+                #conn.commit()
+                print("%d, %.2f, %d, %d, %d, %d" % (line_count, time.time() - start_time, (num_words+num_phrases+num_grams), num_words, num_phrases, num_grams))
+                start_time = time.time()
+                #output_file.flush()
 
 #output_file.close()
 
