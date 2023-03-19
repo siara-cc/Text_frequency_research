@@ -71,7 +71,7 @@ func insert_data(lang_code string, word string, is_word string, max_ord int) {
 			fmt.Printf("Error setting key: %d, %s", line_count, err1.Error())
 			os.Exit(1)
 		}
-		if line_count >= 25 {
+		if line_count%250 == 0 {
 			badger_txn.Commit()
 			badger_txn = db.NewTransaction(true)
 		}
@@ -434,6 +434,11 @@ func main() {
 
 	if INSERT_INTO_BADGER {
 		opts := badger.DefaultOptions("./badger")
+		opts.SyncWrites = false
+		opts.BlockSize = 4096
+		opts.MemTableSize = 64 * 1024 * 1024
+		opts.BaseLevelSize = 256 * 1024 * 1024
+		opts.BlockCacheSize = 64 * 1024 * 1024
 		db_local_var, err := badger.Open(opts)
 		db = db_local_var
 		if err != nil {

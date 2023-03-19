@@ -8,7 +8,7 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 0;
+int INSERT_INTO_IDX = 1;
 int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
@@ -32,9 +32,10 @@ int GEN_SQL = 0;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/resource.h>
-#include "../sqlite_blaster/src/sqlite_index_blaster.h"
+//#include "../sqlite_blaster/src/sqlite_index_blaster.h"
 //#include "../index_research/src/sqlite.h"
 //#include "../index_research/src/stager.h"
+#include "../freqster/src/stager.h"
 
 #if defined(__APPLE__)
 #include <libproc.h>
@@ -92,8 +93,8 @@ sqlite3_stmt *upd_word_freq_stmt;
 sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
-sqlite_index_blaster *ix_obj;
-//stager *ix_obj;
+//sqlite_index_blaster *ix_obj;
+stager *ix_obj;
 int start_at = 0;
 
 FILE *log_fp;
@@ -238,27 +239,27 @@ void insert_into_sqlite_blaster(const char *utf8word, int word_len, const char *
     //return;
     if (!INSERT_INTO_SQLITE_BLASTER)
       return;
-    int32_t count = 1;
-    int expected_rec_len = strlen(lang_code) + word_len + sizeof(int32_t) + strlen(is_word) + strlen(source) + 8;
-    uint8_t sqlite_rec[expected_rec_len];
-    uint8_t sqlite_rec_read[expected_rec_len];
-    const size_t value_lens[] = {strlen(lang_code), (size_t) word_len, sizeof(int32_t), strlen(is_word), strlen(source)};
-    const uint8_t col_types[] = {SQLT_TYPE_TEXT, SQLT_TYPE_TEXT, SQLT_TYPE_INT32, SQLT_TYPE_TEXT, SQLT_TYPE_TEXT};
-    int rec_len = ix_obj->make_new_rec(sqlite_rec, 5, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
-    int rec_read_len = expected_rec_len;
-    bool is_found = ix_obj->get(sqlite_rec, -rec_len, &rec_read_len, sqlite_rec_read);
-    if (is_found) {
-        ix_obj->read_col(2, sqlite_rec_read, rec_read_len, &count);
-        count++;
-        rec_len = ix_obj->make_new_rec(sqlite_rec, 5, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
-        words_updated1++;
-    } else {
-        words_inserted++;
-        total_word_lens += word_len;
-    }
-    ix_obj->put(sqlite_rec, -rec_len, NULL, 0);
-    if (word_len > max_word_len)
-        max_word_len = word_len;
+    // int32_t count = 1;
+    // int expected_rec_len = strlen(lang_code) + word_len + sizeof(int32_t) + strlen(is_word) + strlen(source) + 8;
+    // uint8_t sqlite_rec[expected_rec_len];
+    // uint8_t sqlite_rec_read[expected_rec_len];
+    // const size_t value_lens[] = {strlen(lang_code), (size_t) word_len, sizeof(int32_t), strlen(is_word), strlen(source)};
+    // const uint8_t col_types[] = {SQLT_TYPE_TEXT, SQLT_TYPE_TEXT, SQLT_TYPE_INT32, SQLT_TYPE_TEXT, SQLT_TYPE_TEXT};
+    // int rec_len = ix_obj->make_new_rec(sqlite_rec, 5, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
+    // int rec_read_len = expected_rec_len;
+    // bool is_found = ix_obj->get(sqlite_rec, -rec_len, &rec_read_len, sqlite_rec_read);
+    // if (is_found) {
+    //     ix_obj->read_col(2, sqlite_rec_read, rec_read_len, &count);
+    //     count++;
+    //     rec_len = ix_obj->make_new_rec(sqlite_rec, 5, (const void *[]) {lang_code, utf8word, &count, is_word, source}, value_lens, col_types);
+    //     words_updated1++;
+    // } else {
+    //     words_inserted++;
+    //     total_word_lens += word_len;
+    // }
+    // ix_obj->put(sqlite_rec, -rec_len, NULL, 0);
+    // if (word_len > max_word_len)
+    //     max_word_len = word_len;
 }
 
 void insert_into_lmdb(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
@@ -299,6 +300,24 @@ void insert_into_lmdb(const char *utf8word, int word_len, const char *lang_code,
     if (rc) {
         fprintf(stderr, "mdb_put: (%d) %s\n", rc, mdb_strerror(rc));
         return;
+    }
+    if (line_count % 250 == 0) {
+        rc = mdb_txn_commit(txn);
+        if (rc) {
+            fprintf(stderr, "mdb_txn_commit: (%d) %s\n", rc, mdb_strerror(rc));
+            return;
+        }
+        // mdb_dbi_close(env, dbi);
+        rc = mdb_txn_begin(env, NULL, 0, &txn);
+        if (rc) {
+            fprintf(stderr, "mdb_txn_begin: (%d) %s\n", rc, mdb_strerror(rc));
+            return;
+        }
+        rc = mdb_dbi_open(txn, NULL, 0, &dbi);
+        if (rc) {
+            fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+            return;
+        }
     }
     //cout << "Put complete " << endl;
     if (word_len > max_word_len)
@@ -417,8 +436,8 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
 
     string utf8word = myconv.to_bytes(word);
 
-    fprintf(log_fp, "[%s], [%s], %d\n", lang_code, utf8word.c_str(), utf8word.length());
-    fflush(log_fp);
+    // fprintf(log_fp, "[%s], [%s], %lu\n", lang_code, utf8word.c_str(), utf8word.length());
+    // fflush(log_fp);
     //fsync(log_fd);
 
     // cout << "[" << utf8word << "], " << word.length() << endl;
@@ -843,22 +862,22 @@ void processPost(string& utf8body) {
         }
         if (INSERT_INTO_LMDB) {
             //mdb_cursor_close(cursor);
-            rc = mdb_txn_commit(txn);
-            if (rc) {
-                fprintf(stderr, "mdb_txn_commit: (%d) %s\n", rc, mdb_strerror(rc));
-                return;
-            }
-            mdb_dbi_close(env, dbi);
-            rc = mdb_txn_begin(env, NULL, 0, &txn);
-            if (rc) {
-                fprintf(stderr, "mdb_txn_begin: (%d) %s\n", rc, mdb_strerror(rc));
-                return;
-            }
-            rc = mdb_dbi_open(txn, NULL, 0, &dbi);
-            if (rc) {
-                fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
-                return;
-            }
+            // rc = mdb_txn_commit(txn);
+            // if (rc) {
+            //     fprintf(stderr, "mdb_txn_commit: (%d) %s\n", rc, mdb_strerror(rc));
+            //     return;
+            // }
+            // // mdb_dbi_close(env, dbi);
+            // rc = mdb_txn_begin(env, NULL, 0, &txn);
+            // if (rc) {
+            //     fprintf(stderr, "mdb_txn_begin: (%d) %s\n", rc, mdb_strerror(rc));
+            //     return;
+            // }
+            // rc = mdb_dbi_open(txn, NULL, 0, &dbi);
+            // if (rc) {
+            //     fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+            //     return;
+            // }
             // rc = mdb_cursor_open(txn, dbi, &cursor);
             // if (rc) {
             //     fprintf(stderr, "mdb_cursor_renew: (%d) %s\n", rc, mdb_strerror(rc));
@@ -1061,14 +1080,14 @@ int main(int argc, const char** argv)
         processPost(s);
         exit(1);
     }
-    string log_name(argv[1]);
-    log_name += ".log";
-    log_fp = fopen(log_name.c_str(), "wb");
-    if (log_fp == NULL) {
-        perror("Could not create log file: ");
-        return 1;
-    }
-    log_fd = fileno(log_fp);
+    // string log_name(argv[1]);
+    // log_name += ".log";
+    // log_fp = fopen(log_name.c_str(), "wb");
+    // if (log_fp == NULL) {
+    //     perror("Could not create log file: ");
+    //     return 1;
+    // }
+    // log_fd = fileno(log_fp);
     const int cache_size = atoi(argv[2]);
     const int page_size = atoi(argv[3]);
     const char* const outFilename = argv[4];
@@ -1097,7 +1116,7 @@ int main(int argc, const char** argv)
         }
 
         rc = sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
-        rc = sqlite3_exec(db, "PRAGMA journal_mode = OFF", NULL, NULL, NULL);
+        rc = sqlite3_exec(db, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
         sprintf(cmd_str, "PRAGMA cache_size = %d", cache_size);
         rc = sqlite3_exec(db, cmd_str, NULL, NULL, NULL);
         rc = sqlite3_exec(db, "PRAGMA threads = 2", NULL, NULL, NULL);
@@ -1150,12 +1169,12 @@ int main(int argc, const char** argv)
     }
 
     if (INSERT_INTO_IDX) {
-        ix_obj = new sqlite_index_blaster(2, 1, "key, value", "imain", page_size, cache_size, outFilename);
-        //ix_obj = new stager(outFilename, cache_size);
+        //ix_obj = new sqlite_index_blaster(2, 1, "key, value", "imain", page_size, cache_size, outFilename);
+        ix_obj = new stager(outFilename, cache_size);
     }
 
     if (INSERT_INTO_SQLITE_BLASTER) {
-        ix_obj = new sqlite_index_blaster(5, 2, "lang, word, count, is_word, source", "imain", page_size, cache_size, outFilename);
+        //ix_obj = new sqlite_index_blaster(5, 2, "lang, word, count, is_word, source", "imain", page_size, cache_size, outFilename);
     }
 
     if (INSERT_INTO_LMDB) {
@@ -1341,7 +1360,7 @@ int main(int argc, const char** argv)
     }
 #endif
 
-    fclose(log_fp);
+    // fclose(log_fp);
     return 0;
 
 }
