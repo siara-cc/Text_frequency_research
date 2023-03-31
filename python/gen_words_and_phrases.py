@@ -315,12 +315,6 @@ with open(infile, "rb") as fh:
             del prev_chunk[0:cr_pos+1]
             line_count = line_count + 1
 
-            lang = "en"
-            try:
-                lang = fmodel.predict(string_data)[0][0][-2:]
-            except Exception:
-                pass
-
             try:
                 obj = json.loads(string_data)
             except json.JSONDecodeError:
@@ -340,6 +334,12 @@ with open(infile, "rb") as fh:
                 continue
     
             # print("Body: [%s], [%s]" % (lang, str2split))
+
+            lang = "en"
+            try:
+                lang = fmodel.predict(str2split)[0][0][-2:]
+            except Exception:
+                pass
 
             is_spaceless_lang = lang in ['zh', 'ja', 'ko', 'th', 'my']
             split_words(str2split, lang, is_spaceless_lang)
