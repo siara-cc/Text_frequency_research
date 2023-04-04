@@ -27,8 +27,7 @@ fn insert_data(lang_code: &str, word: &str, is_word: &str, max_ord: u32) {
     println!("[{}], {}", word, word_len);
 }
 
-fn transform_ltr(ltr: char) -> u32 {
-    let mut ltr = ltr as u32;
+fn transform_ltr(ltr: u32) -> u32 {
     if ltr >= 65 && ltr <= 90 {
         return ltr + ('a' as u32 - 'A' as u32);
     }
@@ -38,22 +37,22 @@ fn transform_ltr(ltr: char) -> u32 {
     if ltr < 8212 || ltr > 8288 {
         return ltr;
     }
+    let mut ret = ltr;
     match ltr {
-        8212 => ltr = 45,
-        8216 => ltr = 39,
-        8217 => ltr = 39,
-        8220 => ltr = 34,
-        8221 => ltr = 34,
-        8223 => ltr = 34,
-        8230 => ltr = 32,
-        8288 => ltr = 32,
+        8212 => ret = 45,
+        8216 => ret = 39,
+        8217 => ret = 39,
+        8220 => ret = 34,
+        8221 => ret = 34,
+        8223 => ret = 34,
+        8230 => ret = 32,
+        8288 => ret = 32,
         _ => (),
     }
-    ltr
+    return ret;
 }
 
-fn is_word(ltr: char) -> u32 {
-    let ltr = ltr as u32;
+fn is_word(ltr: u32) -> u32 {
     if (ltr >= 97 && ltr <= 122) || (ltr >= 65 && ltr <= 90) {
         return 1;
     }
@@ -78,33 +77,33 @@ fn insert_grams_in_word(lang_code: &str, word_to_insert: &str, word_len: usize, 
     for ltr_pos in 0..word_len - min_gram_len + 1 {
         for gram_len in min_gram_len..=word_len - ltr_pos {
             unsafe { num_grams += 1; }
-            let gram = &word_to_insert[ltr_pos..ltr_pos + gram_len];
+            let gram = &word_to_insert[ltr_pos..ltr_pos + gram_len - 1];
             insert_data(lang_code, gram, "n", max_ord);
         }
     }
 }
 
-fn process_word_buf_rest(word_buf: &mut Vec<String>, word_buf_count: usize, max_ord_phrase: &mut u32, lang_code: &str, is_spaceless_lang: bool) {
+fn process_word_buf_rest(word_buf: &mut Vec<String>, word_buf_count: i32, max_ord_phrase: u32, lang_code: &str, is_spaceless_lang: bool) {
     if word_buf_count < 3 {
         return;
     }
     let spc_pos = 0;
-    for n in 1..word_buf_count - 1 {
-        let mut wstr = " ".to_string();
+    for n in 1..(word_buf_count - 1) {
+        let wstr: String;
         if is_spaceless_lang
             || word_buf[0].chars().next().unwrap() as u32 >= 0x1F000
             || word_buf[0].chars().next().unwrap() as u32 == 8205
         {
-            wstr = "".to_string();
+            wstr = word_buf[n as usize..].join("");
+        } else {
+            wstr = word_buf[n as usize..].join(" ");
         }
-        wstr.push_str(&word_buf[n..].concat());
         insert_data(lang_code, &wstr, "y", max_ord_phrase);
         unsafe { num_phrases += 1; }
     }
 }
 
-fn process_word(lang_code: &str, word: &str, word_buf: &mut Vec<String>, word_buf_count: &mut i32, max_ord_phrase: &mut i32, max_ord: i32, is_spaceless_lang: &mut bool, is_compound: bool) {
-    use std::mem;
+fn process_word(lang_code: &str, word: &mut Vec<char>, word_buf: &mut Vec<String>, word_buf_count: &mut i32, max_ord_phrase: &mut u32, max_ord: u32, is_spaceless_lang: &mut bool, is_compound: bool) {
 
     if word.is_empty() {
         return;
@@ -114,11 +113,11 @@ fn process_word(lang_code: &str, word: &str, word_buf: &mut Vec<String>, word_bu
         *is_spaceless_lang = false;
     }
 
-    if word.starts_with(' ') || word.chars().nth(0).unwrap() == '\u{200B}' {
+    if word[0] == ' ' || word[0] == '\u{200B}' {
         if *word_buf_count == MAX_WORDS_PER_PHRASE {
             word_buf.remove(0);
             *word_buf_count -= 1;
-            if word.chars().nth(0).unwrap() == ' ' && (*is_spaceless_lang || word_buf[0].chars().nth(0).unwrap() == '\u{200B}') {
+            if word[0] == ' ' && (*is_spaceless_lang || word_buf[0].chars().nth(0).unwrap() == '\u{200B}') {
                 word_buf.remove(0);
             }
             *max_ord_phrase = max_ord;
@@ -128,74 +127,75 @@ fn process_word(lang_code: &str, word: &str, word_buf: &mut Vec<String>, word_bu
             *max_ord_phrase = max_ord;
         }
 
-        if word.chars().nth(0).unwrap() == ' ' {
-            word_buf.push(word[1..].to_string());
+        if word[0] == ' ' {
+            word_buf.push(word[1..].iter().collect::<String>());
         } else {
-            word_buf.push(word.to_string());
+            word_buf.push(word.iter().collect::<String>());
         }
 
         *word_buf_count += 1;
 
-        insert_data(
-            lang_code,
-            if *is_spaceless_lang || word_buf[0].chars().nth(0).unwrap() >= '\u{1F000}' || word_buf[0].chars().nth(0).unwrap() == '\u{200B}' {
-                word_buf.join("")
-            } else {
-                format!("{}{}", " ", word_buf.join(""))
-            },
-            "y",
-            *max_ord_phrase,
-        );
+        let word_to_ins : String;
+        if *is_spaceless_lang || word_buf[0].chars().nth(0).unwrap() == '\u{1F000}' || word_buf[0].chars().nth(0).unwrap() == '\u{200B}' {
+            word_to_ins = word_buf.join("");
+        } else {
+            word_to_ins = word_buf.join(" ");
+        }
+        insert_data(lang_code, word_to_ins.as_str(), "y", *max_ord_phrase);
 
         unsafe { num_phrases += 1; }
 
-        process_word_buf_rest(word_buf, *word_buf_count, *max_ord_phrase, lang_code, is_spaceless_lang);
+        process_word_buf_rest(word_buf, *word_buf_count, *max_ord_phrase, lang_code, *is_spaceless_lang);
     } else {
         word_buf.clear();
-        word_buf.push(word.to_string());
+        word_buf.push(word.iter().collect::<String>());
         *word_buf_count = 1;
         *max_ord_phrase = max_ord;
     }
 
-    let word = if word.starts_with(' ') { &word[1..] } else { word };
-    if word.is_empty() || word.chars().nth(0).unwrap() == '\u{200B}' {
+    if word[0] == ' ' {
+        word.remove(0);
+    }
+    if word.is_empty() || word[0] == '\u{200B}' {
         return;
     }
 
     unsafe { num_words += 1; }
 
-    insert_data(lang_code, word, "y", max_ord);
-    if !is_compound && !word.is_empty() && (word.chars().nth(0).unwrap() < '0' || word.chars().nth(0).unwrap() > '9') && is_word(word.chars().nth(0).unwrap()) > 0 && word.len() < 16 && !is_spaceless_lang {
-        insert_grams_in_word(lang_code, word, word.len(), max_ord);
+    insert_data(lang_code, word.iter().collect::<String>().as_str(), "y", max_ord);
+    if !is_compound && !word.is_empty() && (word[0] < '0' || word[0] > '9') && is_word(word[0] as u32) > 0 && word.len() < 16 && !*is_spaceless_lang {
+        insert_grams_in_word(lang_code, word.iter().collect::<String>().as_str(), word.len(), max_ord);
     }
 }
 
 const MAX_WORD_LEN: usize = 21;
 
-fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
+fn split_words(input_str: &str, lang: &str, _is_spaceless_lang: bool) {
+    let str2split: Vec<char> = input_str.chars().collect();
     let mut word: Vec<char> = Vec::new();
-    let mut max_ord = 0;
+    let mut max_ord: u32 = 0;
     let mut same_ltr_count = 0;
     let mut prev_ltr: u32 = 0;
     let mut is_compound = false;
     let mut word_buf: Vec<String> = Vec::new();
-    let mut word_buf_count = vec![0];
-    let mut max_ord_phrase = 0;
-    let mut i = 0;
+    let mut word_buf_count: i32 = 0;
+    let mut max_ord_phrase: u32 = 0;
+    let mut is_spaceless_lang = _is_spaceless_lang;
+    let mut i: usize = 0;
 
     while i < str2split.len() {
         if i > 0
-            && str2split[i..=i] == "/"
-            && (str2split[i - 1..=i - 1] == "r" || str2split[i - 1..=i - 1] == "u")
+            && str2split[i] == '/'
+            && (str2split[i - 1] == 'r' || str2split[i - 1] == 'u')
             && (i == 1
                 || (i > 1
-                    && (str2split[i - 2..=i - 2] == " "
-                        || str2split[i - 2..=i - 2] == "/"
-                        || str2split[i - 2..=i - 2] == "\n"
-                        || str2split[i - 2..=i - 2] == "|")))
+                    && (str2split[i - 2] == ' '
+                        || str2split[i - 2] == '/'
+                        || str2split[i - 2] == '\n'
+                        || str2split[i - 2] == '|')))
         {
             i += 1;
-            while i < str2split.len() - 1 && is_word(transform_ltr(str2split[i..=i])) > 0 {
+            while i < str2split.len() - 1 && is_word(transform_ltr(str2split[i] as u32)) > 0 {
                 i += 1;
             }
             prev_ltr = 0;
@@ -205,7 +205,7 @@ fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
             continue;
         }
 
-        let ltr_t = transform_ltr(str2split[i..=i]);
+        let ltr_t: u32 = transform_ltr(str2split[i] as u32);
         let ltr_type = is_word(ltr_t);
 
         if ltr_type > 0 {
@@ -213,19 +213,10 @@ fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
                 max_ord = ltr_t;
             }
             if prev_ltr >= 0x1F000 {
-                process_word(
-                    lang,
-                    &word.iter().collect::<String>(),
-                    &mut word_buf,
-                    &mut word_buf_count,
-                    &mut max_ord_phrase,
-                    max_ord,
-                    is_spaceless_lang,
-                    is_compound,
-                );
+                process_word(lang, &mut word, &mut word_buf, &mut word_buf_count, &mut max_ord_phrase, max_ord, &mut is_spaceless_lang, is_compound);
                 word.clear();
                 word_buf.clear();
-                word_buf_count[0] = 0;
+                word_buf_count = 0;
                 max_ord = ltr_t;
             }
             if is_spaceless_lang && ltr_t > 127 {
@@ -234,16 +225,7 @@ fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
                     word.push(' ');
                 }
                 word.push(std::char::from_u32(ltr_t).unwrap());
-                process_word(
-                    lang,
-                    &word.iter().collect::<String>(),
-                    &mut word_buf,
-                    &mut word_buf_count,
-                    &mut max_ord_phrase,
-                    max_ord,
-                    is_spaceless_lang,
-                    is_compound,
-                );
+                process_word(lang, &mut word, &mut word_buf, &mut word_buf_count, &mut max_ord_phrase, max_ord, &mut is_spaceless_lang, is_compound);
                 word.clear();
             } else {
                 if prev_ltr > 0x1F000 {
@@ -262,17 +244,17 @@ fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
                 }
             }
         } else {
-            if (word.len() > 0) {
-                let word_str = word.concat();
-                if (!word_str.contains("reddit")
+            if word.len() > 0 {
+                let word_str = word.iter().collect::<String>();
+                if !word_str.contains("reddit")
                         && !word_str.contains("moderator")
-                        && same_ltr_count < 4) {
-                    if (word.len() < MAX_WORD_LEN && prev_ltr != 45) { // '-'
-                        process_word(lang, word_str, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+                        && same_ltr_count < 4 {
+                    if word.len() < MAX_WORD_LEN && prev_ltr != 45 { // '-'
+                        process_word(lang, &mut word, &mut word_buf, &mut word_buf_count, &mut max_ord_phrase, max_ord, &mut is_spaceless_lang, is_compound);
                         word.clear();
-                        if (ltr_t == 32 and prev_ltr < 0x1F000 and (i + 1) < len(str2split)
-                                and is_word(transform_ltr(str2split[i + 1])) > 0) {
-                            word.push(" ");
+                        if ltr_t == 32 && prev_ltr < 0x1F000 && (i + 1) < str2split.len()
+                                && is_word(transform_ltr(str2split[i + 1] as u32)) > 0 {
+                            word.push(' ');
                         }
                     } else {
                         word.clear();
@@ -281,23 +263,23 @@ fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
                     word.clear();
                 }
             }
-            if (ltr_type > 0) {
+            if ltr_type > 0 {
                 word.clear();
-                word.push(ltr_t as char);
+                word.push(std::char::from_u32(ltr_t).unwrap());
                 max_ord = ltr_t;
             } else {
                 max_ord = 0;
             }
-            if (ltr_t > 0x1F000 || ltr_t == 8205) {
-                if (prev_ltr > 0x1F000 or prev_ltr == 8205) {
+            if ltr_t > 0x1F000 || ltr_t == 8205 {
+                if prev_ltr > 0x1F000 || prev_ltr == 8205 {
                     word.clear();
                     word.push(' ');
                 }
-                word.push(ltr_t as char);
-                if (max_ord < ltr_t) {
+                word.push(std::char::from_u32(ltr_t).unwrap());
+                if max_ord < ltr_t {
                     max_ord = ltr_t;
                 }
-                if (prev_ltr == ltr_t && same_ltr_count > -1) {
+                if prev_ltr == ltr_t && same_ltr_count > -1 {
                     same_ltr_count = same_ltr_count + 1;
                 } else {
                     same_ltr_count = -1;
@@ -310,20 +292,39 @@ fn split_words(str2split: &str, lang: &str, is_spaceless_lang: bool) {
         prev_ltr = ltr_t;
         i = i + 1;
     }
-    if (word.len() > 0) {
-        word_str = word.concat();
-        if (!word_str.contains("reddit")
+    if word.len() > 0 {
+        let word_str = word.iter().collect::<String>();
+        if !word_str.contains("reddit")
                 && !word_str.contains("moderator")
-                && same_ltr_count < 4) {
-            if (word.len() < MAX_WORD_LEN and prev_ltr != 45) { // '-'
-                process_word(lang, word_str, word_buf, word_buf_count, max_ord_phrase, max_ord, is_spaceless_lang, is_compound);
+                && same_ltr_count < 4 {
+            if word.len() < MAX_WORD_LEN && prev_ltr != 45 { // '-'
+                process_word(lang, &mut word, &mut word_buf, &mut word_buf_count, &mut max_ord_phrase, max_ord, &mut is_spaceless_lang, is_compound);
             }
         }
     }
 }
 
-const MAX_WORDS_PER_PHRASE: usize = 5;
+const MAX_WORDS_PER_PHRASE: i32 = 5;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+	//split_words("Good boy 👨🏻‍🌾🌎💜", "en", false);
+	//split_words("💜how are", "en", false);
+	//split_words("Good 🌎💜", "en", false);
+	//split_words("树倒猢狲散水能载舟", "zh", true);
+	//split_words("Hello, World \"How\" is Lewis' health now-adays", "en", false);
+	split_words("I LOVE YOU GUYS SO MUCHHHHHHHHHH♥ ", "zh", true);
+	//split_words("Hello World how are you there?", "en", false);
+	// split_words("if you took £400 for", "en", false);
+	// split_words("“he hid", "en", false);
+	// split_words("until 改革开放 that", "zh", true);
+	// split_words("réussi à", "en", false);
+	// split_words("until 改革开放 that", "en", false);
+	// split_words("r/suicidewatch &gt;»»»»»&gt;", "id", false);
+	// split_words("notation \"x→−3^(−)\" means", "en", false);
+	// split_words("What are you implying‽", "en", false);
+	// split_words("Wool™", "en", false);
+	// split_words("to read かんばってください！", "en", false);
+    return Ok(());
 
     // Get the command line arguments as a vector of strings
     let args: Vec<String> = env::args().collect();
@@ -331,7 +332,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("Usage: {} <input file>", args[0]);
         return Ok(());
     }
-
 
     // Load the pre-trained FastText model for language identification
     let mut model = FastText::new();
