@@ -32,10 +32,10 @@ int GEN_SQL = 0;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/resource.h>
-//#include "../sqlite_blaster/src/sqlite_index_blaster.h"
+//#include "../sqlite_blaster/src/sqib/sqlite_index_blaster.h"
 //#include "../index_research/src/sqlite.h"
 //#include "../index_research/src/stager.h"
-#include "../freqster/src/stager.h"
+#include "../sqlite_lsm/src/sqlite_lsm.h"
 
 #if defined(__APPLE__)
 #include <libproc.h>
@@ -94,7 +94,8 @@ sqlite3_stmt *del_word_freq_stmt;
 const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
 //sqlite_index_blaster *ix_obj;
-stager *ix_obj;
+//stager *ix_obj;
+sqlite_lsm *ix_obj;
 int start_at = 0;
 
 FILE *log_fp;
@@ -1063,7 +1064,8 @@ int main(int argc, const char** argv)
     if (argc<3) {
         fprintf(stderr, "wrong arguments\n");
         fprintf(stderr, "usage:\n");
-        fprintf(stderr, "%s FILE\n", exeName);
+        fprintf(stderr, "%s -s <string> \n", exeName);
+        fprintf(stderr, "%s <file> <cache_size> <page_size> <out_file>\n", exeName);
         return 1;
     }
 
@@ -1170,7 +1172,8 @@ int main(int argc, const char** argv)
 
     if (INSERT_INTO_IDX) {
         //ix_obj = new sqlite_index_blaster(2, 1, "key, value", "imain", page_size, cache_size, outFilename);
-        ix_obj = new stager(outFilename, cache_size);
+        //ix_obj = new stager(outFilename, cache_size);
+        ix_obj = new sqlite_lsm(outFilename, cache_size);
     }
 
     if (INSERT_INTO_SQLITE_BLASTER) {
