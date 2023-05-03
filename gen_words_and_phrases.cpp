@@ -19,7 +19,7 @@ int GEN_SQL = 0;
 #include <stdio.h>     // fprintf
 #include <stdlib.h>
 #include <zstd.h>      // presumes zstd library is installed
-#include <fasttext.h>
+#include <fasttext/fasttext.h>
 #include "common.h"    // Helper functions, CHECK(), and CHECK_ZSTD()
 #include <string>
 #include <sstream>
