@@ -23,7 +23,7 @@ if [ ! -f "lid.176.bin" ]; then
 fi
 COMP_OPTS="-O3 -std=c++17"
 # -fsanitize=address"
-g++ ${COMP_OPTS} -L/usr/local/lib -L/usr/lib -I. -Imisc -I../mimalloc/include -I/usr/local/include -I../usr/include -I../bloom/src -I../lmdb/libraries/liblmdb gen_words_and_phrases.cpp sqlite3.o ../index_research/src/univix_util.cpp ../lmdb/libraries/liblmdb/liblmdb.a -lrocksdb -lpthread -ldl -llz4 -lbz2 -lzstd -lz -lsnappy -lbrotlienc -lfasttext
+g++ ${COMP_OPTS} -L/usr/local/lib -L/usr/lib -I. -Imisc -I../mimalloc/include -I/usr/local/include -I../usr/include -I../bloom/src -I../lmdb/libraries/liblmdb gen_words_and_phrases.cpp sqlite3.o ../index_research/src/univix_util.cpp ../lmdb/libraries/liblmdb/liblmdb.a -lrocksdb -lpthread -ldl -llz4 -lbz2 -lzstd -lz -lsnappy -lbrotlienc -lbrotlidec -lfasttext
 #-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -ljemalloc
 
 # screen sh -c './a.out RC_2013-04.zst 5000 4096 rocksdb >> logs/aws_m6gd/rocksdb_320mb_22dec.log 2>>fail.log '
