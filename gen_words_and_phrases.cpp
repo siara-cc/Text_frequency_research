@@ -8,11 +8,11 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 1;
+int INSERT_INTO_IDX = 0;
 int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
-int INSERT_INTO_ROCKSDB = 0;
+int INSERT_INTO_ROCKSDB = 1;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
@@ -71,6 +71,7 @@ using namespace rocksdb;
 std::string kDBPath = "./rocksdb_word_freq";
 DB* rocksdb1;
 Options rdb_options;
+rocksdb::WriteOptions writeOptions;
 
 // LMDB
 MDB_env *env;
@@ -351,7 +352,7 @@ void insert_into_rocksdb(const char *utf8word, int word_len, const char *lang_co
       total_word_lens += word_len;
     }
     count_str = std::to_string(count);
-    s = rocksdb1->Put(WriteOptions(), key, count_str);
+    s = rocksdb1->Put(writeOptions, key, count_str);
     assert(s.ok());
     //cout << "Put complete " << endl;
     if (word_len > max_word_len)
@@ -1219,26 +1220,28 @@ int main(int argc, const char** argv)
       //rdb_options.setCompressionType(CompressionType::kNoCompression);
          rocksdb::BlockBasedTableOptions table_options;
          //table_options.block_size = 16384;
-         table_options.enable_index_compression = false;
-         table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
-         rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
-         rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
-         rdb_options.disable_auto_compactions = true;
-         rdb_options.write_buffer_size = 64 * 1024 * 1024LL;
-         rdb_options.max_write_buffer_number = 3;
-         rdb_options.target_file_size_base = 64 * 1024 * 1024LL;
-         rdb_options.max_background_compactions = 4;
-         rdb_options.level0_file_num_compaction_trigger = 8;
-         rdb_options.level0_slowdown_writes_trigger = -1; // 17;
-         rdb_options.level0_stop_writes_trigger = 36;
-         rdb_options.num_levels = 4;
-         rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
-         rdb_options.max_bytes_for_level_multiplier = 8;
-         rdb_options.compression = rocksdb::CompressionType::kNoCompression;
+        //  table_options.enable_index_compression = false;
+        //  table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
+        //  rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
+        //  rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
+        //  rdb_options.disable_auto_compactions = true;
+        //  rdb_options.write_buffer_size = 64 * 1024 * 1024LL;
+        //  rdb_options.max_write_buffer_number = 3;
+        //  rdb_options.target_file_size_base = 64 * 1024 * 1024LL;
+        //  rdb_options.max_background_compactions = 4;
+        //  rdb_options.level0_file_num_compaction_trigger = 8;
+        //  rdb_options.level0_slowdown_writes_trigger = -1; // 17;
+        //  rdb_options.level0_stop_writes_trigger = 36;
+        //  rdb_options.num_levels = 4;
+        //  rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
+        //  rdb_options.max_bytes_for_level_multiplier = 8;
+        //  rdb_options.compression = rocksdb::CompressionType::kNoCompression;
 
       // create the DB if it's not already present
+      writeOptions.disableWAL = true;
       rdb_options.create_if_missing = true;
-      rdb_options.rate_limiter = shared_ptr<RateLimiter>(NewGenericRateLimiter(2000000000L));
+      rdb_options.rate_limiter = nullptr; // shared_ptr<RateLimiter>(NewGenericRateLimiter(2000000000L));
+      rdb_options.disable_auto_compactions = true;
       // open DB
       Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
       //assert(s.ok());
