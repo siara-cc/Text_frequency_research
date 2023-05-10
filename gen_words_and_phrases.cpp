@@ -8,11 +8,11 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 0;
+int INSERT_INTO_IDX = 1;
 int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
-int INSERT_INTO_ROCKSDB = 1;
+int INSERT_INTO_ROCKSDB = 0;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
@@ -1219,6 +1219,7 @@ int main(int argc, const char** argv)
       rdb_options.OptimizeLevelStyleCompaction();
       //rdb_options.setCompressionType(CompressionType::kNoCompression);
          rocksdb::BlockBasedTableOptions table_options;
+         table_options.use_delta_encoding = true;
          //table_options.block_size = 16384;
         //  table_options.enable_index_compression = false;
         //  table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
@@ -1235,13 +1236,13 @@ int main(int argc, const char** argv)
         //  rdb_options.num_levels = 4;
         //  rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
         //  rdb_options.max_bytes_for_level_multiplier = 8;
-        //  rdb_options.compression = rocksdb::CompressionType::kNoCompression;
+        rdb_options.compression = rocksdb::CompressionType::kLZ4Compression;
 
       // create the DB if it's not already present
       writeOptions.disableWAL = true;
       rdb_options.create_if_missing = true;
       rdb_options.rate_limiter = nullptr; // shared_ptr<RateLimiter>(NewGenericRateLimiter(2000000000L));
-      rdb_options.disable_auto_compactions = true;
+      //rdb_options.disable_auto_compactions = true;
       // open DB
       Status s = DB::Open(rdb_options, kDBPath, &rocksdb1);
       //assert(s.ok());
