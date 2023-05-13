@@ -8,11 +8,11 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 1;
+int INSERT_INTO_IDX = 0;
 int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
-int INSERT_INTO_ROCKSDB = 0;
+int INSERT_INTO_ROCKSDB = 1;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
@@ -1348,7 +1348,7 @@ int main(int argc, const char** argv)
     char cmd[100];
     pid_t pid = getpid();
     sprintf(cmd, "ps -p %d -o oublk -o inblk", pid);
-    system(cmd);
+    int sysret = system(cmd);
 #if defined(__APPLE__)
     rusage_info_current rusage;
     if (proc_pid_rusage(pid, RUSAGE_INFO_CURRENT, (void **)&rusage) == 0)
@@ -1358,7 +1358,7 @@ int main(int argc, const char** argv)
     }
 #else
     sprintf(cmd, "cat /proc/%d/io", pid);
-    system(cmd);
+    sysret = system(cmd);
     struct rusage ru;
     if (getrusage(RUSAGE_SELF, &ru) == 0)
     {
