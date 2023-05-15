@@ -51,6 +51,7 @@ int GEN_SQL = 0;
 #include "rocksdb/table.h"
 #include "rocksdb/rate_limiter.h"
 #include "rocksdb/advanced_options.h"
+#include <rocksdb/filter_policy.h>
 
 #include "lmdb.h"
 
@@ -1220,10 +1221,11 @@ int main(int argc, const char** argv)
       //rdb_options.setCompressionType(CompressionType::kNoCompression);
          rocksdb::BlockBasedTableOptions table_options;
          table_options.use_delta_encoding = true;
+         table_options.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10));
          //table_options.block_size = 16384;
         //  table_options.enable_index_compression = false;
         //  table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
-        //  rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
+        rdb_options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
         //  rdb_options.compaction_style = rocksdb::kCompactionStyleLevel;
         //  rdb_options.disable_auto_compactions = true;
         //  rdb_options.write_buffer_size = 64 * 1024 * 1024LL;
