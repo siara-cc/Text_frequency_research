@@ -25,9 +25,9 @@ COMP_OPTS="-O3 -g -std=c++17"
 # -fsanitize=address"
 CFLAGS="-I/usr/local/Cellar/openssl@1.1/1.1.1t/include -I. -Imisc -I../mimalloc/include -I/usr/local/include -I../usr/include -I../bloom/src -I../lmdb/libraries/liblmdb"
 LDFLAGS="-L/usr/local/Cellar/openssl@1.1/1.1.1t/lib -L/usr/local/lib -L/usr/lib"
-LDLFLAGS="-lrocksdb -lpthread -ldl -llz4 -lbz2 -lzstd -lz -lsnappy -lbrotlienc -lbrotlidec -lfasttext"
+LDLFLAGS="-lrocksdb -lpthread -ldl -llz4 -lbz2 -lzstd -lz -lsnappy -lbrotlienc -lbrotlidec -lfasttext -lmarisa -mbmi2 -mpopcnt"
 SRCS="gen_words_and_phrases.cpp sqlite3.o ../index_research/src/univix_util.cpp ../smhasher/src/City.cpp ../smhasher/src/Spooky.cpp ../lmdb/libraries/liblmdb/liblmdb.a"
-g++ ${COMP_OPTS} ${CFLAGS} ${LDFLAGS} ${SRCS} ${LDLFLAGS}
+g++ -march=native ${COMP_OPTS} ${CFLAGS} ${LDFLAGS} ${SRCS} ${LDLFLAGS}
 #-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -ljemalloc
 
 # screen sh -c './a.out RC_2013-04.zst 5000 4096 rocksdb >> logs/aws_m6gd/rocksdb_320mb_22dec.log 2>>fail.log '
