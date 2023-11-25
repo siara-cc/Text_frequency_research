@@ -1,0 +1,80 @@
+#0  squeezed::static_dict::which_fragment (cur_frag=0x560e4e5e16e0, 
+    node_id=<optimized out>, this=<optimized out>)
+    at ../sqlite_lsm/src/../../squeezed-trie/src/squeezed.h:728
+#1  squeezed::static_dict::scan_block64 (target_term_count=<optimized out>, 
+    bm_ptr=@0x7fffee92c058: 86164345737707745, 
+    bm_child=@0x7fffee92c050: 803340578658521609, bm_term=<optimized out>, 
+    bm_leaf=<optimized out>, term_count=<synthetic pointer>: <optimized out>, 
+    child_count=@0x7fffee92c03c: 2323669, node_id=@0x7fffee92c038: 3788097, 
+    this=<optimized out>)
+    at ../sqlite_lsm/src/../../squeezed-trie/src/squeezed.h:697
+#2  squeezed::static_dict::find_child (this=<optimized out>, 
+    node_id=@0x7fffee92c038: 3788097, child_count=@0x7fffee92c03c: 2323669, 
+    bm_leaf=<optimized out>, bm_term=<optimized out>, 
+    bm_child=@0x7fffee92c050: 803340578658521609, 
+    bm_ptr=@0x7fffee92c058: 86164345737707745)
+    at ../sqlite_lsm/src/../../squeezed-trie/src/squeezed.h:773
+#3  0x0000560e4149c4e4 in squeezed::static_dict::lookup (
+    this=this@entry=0x560e60e810d0, 
+    key=key@entry=0x7fffee92d6d0 "en understand why they didn't considers werestionshipdoaknsms̠̖̗̘̙̜̝̞̟̠t e ͡҉व\210نِit", 
+    key_len=key_len@entry=38)
+    at ../sqlite_lsm/src/../../squeezed-trie/src/squeezed.h:903
+#4  0x0000560e414a824e in squeezed::static_dict::get (val=0x7fffee92d690 "", 
+    in_size_out_value_len=0x7fffee92c23c, key_len=38, 
+    key=0x7fffee92d6d0 "en understand why they didn't considers werestionshipdoaknsms̠̖̗̘̙̜̝̞̟̠t e ͡҉व\210نِit", this=0x560e60e810d0)
+    at ../sqlite_lsm/src/../../squeezed-trie/src/squeezed.h:928
+#5  dict_map::get (ctx=0x0, val=0x7fffee92d690 "", 
+    in_size_out_val_len=0x7fffee92c23c, key_len=38, 
+    key=0x7fffee92d6d0 "en understand why they didn't considers werestionshipdoaknsms̠̖̗̘̙̜̝̞̟̠t e ͡҉व\210نِit", this=<optimized out>)
+    at ../sqlite_lsm/src/dict_map.h:110
+#6  sqlite_lsm::get (this=this@entry=0x560e43ae6eb0, 
+    key=key@entry=0x7fffee92d6d0 "
+en understand why they didn't considers werestionshipdoaknsms̠̖̗̘̙̜̝̞̟̠t e ͡҉व\210نِit", 
+    key_len=key_len@entry=38 '&', 
+    in_size_out_value_len=in_size_out_value_len@entry=0x7fffee92c23c, 
+    val=val@entry=0x7fffee92d690 "", until=40, until@entry=39)
+    at ../sqlite_lsm/src/sqlite_lsm.h:474
+#7  0x0000560e414bd15b in sqlite_lsm::shrink_lvl (
+    this=this@entry=0x560e43ae6eb0, idx=<optimized out>)
+    at ../sqlite_lsm/src/sqlite_lsm.h:218
+#8  0x0000560e41496fe4 in sqlite_lsm::shrink_idx_more (
+    thrshld2=0.90000000000000002, thrshld1=0.94999999999999996, 
+    this=0x560e43ae6eb0) at ../sqlite_lsm/src/sqlite_lsm.h:385
+#9  sqlite_lsm::put (value_len=4, value=0x7fffee92db68 "", key_len=24 '\030', 
+    key=0x7fffee92db70 "en a specific 'hm slave'", this=0x560e43ae6eb0)
+    at ../sqlite_lsm/src/sqlite_lsm.h:399
+#10 insert_into_idx (utf8word=0x560e5e015180 "a specific 'hm slave'", 
+    word_len=24, lang_code=lang_code@entry=0x7fffee92e0cb "en", 
+    source=0x560e418c0197 "r", is_word=0x560e418d44dd "y")
+    at gen_words_and_phrases.cpp:235
+#11 0x0000560e41497388 in insert_into_idx (source=0x560e418c0197 "r", 
+    is_word=0x560e418d44dd "y", lang_code=0x7fffee92e0cb "en", 
+    word_len=<optimized out>, utf8word=<optimized out>)
+    at gen_words_and_phrases.cpp:212
+#12 insert_data (lang_code=0x7fffee92e0cb "en", word=L"a specific 'hm slave'", 
+    is_word=0x560e418d44dd "y", max_ord=<optimized out>)
+    at gen_words_and_phrases.cpp:449
+#13 0x0000560e414978da in process_word_buf_rest (
+    word_buf=L"have a specific 'hm slave'", word_buf_count=<optimized out>, 
+    max_ord_phrase=118, lang_code=0x7fffee92e0cb "en", is_spaceless_lang=false)
+    at gen_words_and_phrases.cpp:646
+#14 0x0000560e41497bf1 in process_word (lang_code=0x7fffee92e0cb "en", 
+    word=L" slave'", word_buf=L"have a specific 'hm slave'", 
+    word_buf_count=@0x7fffee92dfa0: 5, max_ord_phrase=@0x7fffee92dfa4: 118, 
+    max_ord=118, is_spaceless_lang=false, is_compound=true)
+    at gen_words_and_phrases.cpp:676
+#15 0x0000560e41498798 in split_words (
+    str2split="I don't think I often have a specific 'HM slave' - as in, one Pokemon whose only purpose is to know HMs. But I don't clog up my team with HM moves (bar Surf and Fly) either, instead, I have a transien"..., 
+    lang=0x7fffee92e0cb "en", is_spaceless_lang=false)
+    at gen_words_and_phrases.cpp:754
+#16 0x0000560e41498a71 in processPost (
+    utf8body="I don't think I often have a specific 'HM slave' - as in, one Pokemon whose only purpose is to know HMs. But I don't clog up my team with HM moves (bar Surf and Fly) either, instead, I have a transien"...)
+    at gen_words_and_phrases.cpp:833
+#17 0x0000560e4149989a in processPost (d=...) at gen_words_and_phrases.cpp:911
+#18 0x0000560e41499fff in processOutput (buf=<optimized out>, 
+    len=<optimized out>) at gen_words_and_phrases.cpp:947
+#19 0x0000560e4147375a in decompressFile_orDie (fname=<optimized out>)
+    at gen_words_and_phrases.cpp:1014
+#20 main (argc=<optimized out>, argv=<optimized out>)
+    at gen_words_and_phrases.cpp:1262
+
