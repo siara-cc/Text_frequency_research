@@ -1,0 +1,54 @@
+At 12120000:  Size of db: 3.9gb
+top - 08:12:29 up 10:10,  1 user,  load average: 1.18, 1.20, 1.19
+Tasks: 215 total,   2 running, 213 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 13.2 us,  1.4 sy,  0.0 ni, 84.6 id,  0.3 wa,  0.0 hi,  0.4 si,  0.0 st
+MiB Mem :   3832.5 total,    139.2 free,    990.2 used,   2703.1 buff/cache
+MiB Swap:   9011.2 total,   6237.9 free,   2773.3 used.   2480.2 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3483 arun      20   0 4257912 563688    780 R  54.7  14.4 478:23.47 ./a.out+ 
+
+
+At 13810000:  Size of db: 4.4gb
+top - 10:37:35 up 12:35,  1 user,  load average: 1.04, 1.16, 1.17
+Tasks: 220 total,   1 running, 219 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 11.1 us,  1.1 sy,  0.0 ni, 85.8 id,  1.6 wa,  0.0 hi,  0.4 si,  0.0 st
+MiB Mem :   3832.5 total,    146.6 free,   1035.3 used,   2650.6 buff/cache
+MiB Swap:   9011.2 total,   6217.4 free,   2793.8 used.   2417.1 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3483 arun      20   0 4257912 567160    884 D  50.3  14.5 558:52.68 a.out    
+
+
+At 17690000:  Size of db: 5.3gb
+top - 16:56:32 up 18:54,  1 user,  load average: 1.59, 1.38, 1.26
+Tasks: 222 total,   2 running, 220 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 10.5 us,  1.2 sy,  0.0 ni, 86.5 id,  1.6 wa,  0.0 hi,  0.1 si,  0.0 st
+MiB Mem :   3832.5 total,    128.4 free,   1087.1 used,   2617.0 buff/cache
+MiB Swap:   9011.2 total,   6193.2 free,   2818.0 used.   2361.7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3483 arun      20   0 4257912 590188   1532 R  40.2  15.0 757:35.03 a.out    
+
+
+At 27470000:  Size of db: 8.4gb
+top - 12:03:32 up 1 day, 14:01,  1 user,  load average: 1.35, 1.18, 1.11
+Tasks: 232 total,   1 running, 231 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  8.3 us,  1.7 sy,  0.0 ni, 85.5 id,  3.7 wa,  0.0 hi,  0.7 si,  0.0 st
+MiB Mem :   3832.5 total,    113.6 free,   1111.9 used,   2606.9 buff/cache
+MiB Swap:   9011.2 total,   6046.6 free,   2964.6 used.   2332.6 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3483 arun      20   0 4257912 594776   1872 D  35.3  15.2   1293:52 a.out    
+
+At 29110000:  Size of db: 9.1gb
+top - 16:19:51 up 1 day, 18:17,  1 user,  load average: 1.33, 1.15, 1.11
+Tasks: 218 total,   1 running, 217 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  7.5 us,  1.1 sy,  0.0 ni, 89.5 id,  1.5 wa,  0.0 hi,  0.4 si,  0.0 st
+MiB Mem :   3832.5 total,    114.7 free,   1110.6 used,   2607.2 buff/cache
+MiB Swap:   9011.2 total,   6035.6 free,   2975.6 used.   2316.4 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3483 arun      20   0 4257912 600584   1660 D  31.7  15.3   1397:44 a.out    
+
+
