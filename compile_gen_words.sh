@@ -23,7 +23,7 @@ if [ ! -f "lid.176.bin" ]; then
 fi
 COMP_OPTS="-O3 -g -std=c++17"
 # -fsanitize=address"
-CFLAGS="-I/usr/local/Cellar/openssl@1.1/1.1.1t/include -I. -Imisc -I../mimalloc/include -I/usr/local/include -I../usr/include -I../bloom/src -I../lmdb/libraries/liblmdb"
+CFLAGS="-I/usr/local/Cellar/openssl@1.1/1.1.1t/include -I. -Imisc -I../mimalloc/include -I/usr/local/include -I../usr/include -I../bloom/src -I../lmdb/libraries/liblmdb -DZSTD"
 LDFLAGS="-L/usr/local/Cellar/openssl@1.1/1.1.1t/lib -L/usr/local/lib -L/usr/lib"
 LDLFLAGS="-lrocksdb -lpthread -ldl -llz4 -lbz2 -lzstd -lz -lsnappy -lbrotlienc -lbrotlidec -lfasttext -lmarisa -mbmi2 -mpopcnt"
 SRCS="gen_words_and_phrases.cpp sqlite3.o ../index_research/src/univix_util.cpp ../smhasher/src/City.cpp ../smhasher/src/Spooky.cpp ../lmdb/libraries/liblmdb/liblmdb.a"
