@@ -1218,10 +1218,23 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_ROCKSDB) {
       rdb_options.IncreaseParallelism();
       rdb_options.OptimizeLevelStyleCompaction();
-      //rdb_options.setCompressionType(CompressionType::kNoCompression);
+      //rdb_options.setCompressionType(CompressionType::kZSTD);
+      rdb_options.compression = rocksdb::CompressionType::kZSTD;
+      std::vector<rocksdb::CompressionType> cpl;
+      cpl.push_back(rocksdb::CompressionType::kNoCompression);
+      cpl.push_back(rocksdb::CompressionType::kNoCompression);
+      cpl.push_back(rocksdb::CompressionType::kZSTD);
+      cpl.push_back(rocksdb::CompressionType::kZSTD);
+      cpl.push_back(rocksdb::CompressionType::kZSTD);
+      cpl.push_back(rocksdb::CompressionType::kZSTD);
+      cpl.push_back(rocksdb::CompressionType::kZSTD);
+      rdb_options.compression_per_level = cpl;
+      rdb_options.compression_opts = rocksdb::CompressionOptions();
+      rdb_options.compression_opts.max_dict_bytes = 16 * 1024;
+      rdb_options.compression_opts.zstd_max_train_bytes = 100 * 16 * 1024;
          rocksdb::BlockBasedTableOptions table_options;
          table_options.use_delta_encoding = true;
-         table_options.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10));
+         //table_options.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10));
          //table_options.block_size = 16384;
         //  table_options.enable_index_compression = false;
         //  table_options.block_cache = rocksdb::NewLRUCache(64 * 1024 * 1024LL);
@@ -1238,8 +1251,6 @@ int main(int argc, const char** argv)
         //  rdb_options.num_levels = 4;
         //  rdb_options.max_bytes_for_level_base = 512 * 1024 * 1024LL;
         //  rdb_options.max_bytes_for_level_multiplier = 8;
-        rdb_options.compression = rocksdb::CompressionType::kLZ4Compression;
-
       // create the DB if it's not already present
       writeOptions.disableWAL = true;
       rdb_options.create_if_missing = true;

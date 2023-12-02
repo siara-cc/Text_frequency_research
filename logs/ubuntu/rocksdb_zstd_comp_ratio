@@ -1,0 +1,79 @@
+
+1.6mb train
+2.22 million = 12.7mb
+4.08 million = 23.8mb
+5.83 million = 33.9mb
+
+top - 14:01:16 up 47 min,  1 user,  load average: 1.41, 1.34, 1.21
+Tasks: 212 total,   2 running, 210 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 24.0 us,  1.7 sy,  0.0 ni, 73.5 id,  0.6 wa,  0.0 hi,  0.2 si,  0.0 st
+MiB Mem :   3832.4 total,    180.6 free,   3295.3 used,    356.6 buff/cache
+MiB Swap:   9011.2 total,   4802.2 free,   4209.0 used.    213.0 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   2853 arun      20   0 9156768   2.9g   2620 R  99.4  77.9  22:25.31 a.out    
+
+
+100mb train
+2.22 million = 12.7mb
+4.08 million = 21.8mb
+5.83 million = 29.36mb
+7.46 million = 34.77mb
+9.07 million = 44.12mb
+10.6 million = 50mb
+12.2 million = 60mb
+13.45 million = 66mb
+
+16mb train bytes
+10.6 million = 53mb
+13.37 million = 66mb
+
+
+16kb dict lz4
+
+3.7mil = 29mb
+
+top - 14:38:33 up  1:24,  1 user,  load average: 1.50, 1.41, 1.29
+Tasks: 214 total,   2 running, 212 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 15.8 us,  1.8 sy,  0.0 ni, 77.7 id,  4.3 wa,  0.0 hi,  0.4 si,  0.0 st
+MiB Mem :   3832.4 total,    112.4 free,   2522.5 used,   1197.5 buff/cache
+MiB Swap:   9011.2 total,   4736.7 free,   4274.5 used.    976.7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3018 arun      20   0 8190228   2.2g   1356 R  63.9  57.4  33:29.37 a.out    
+
+
+16kb dict zstd
+
+3.73mil = 22mb
+
+top - 15:38:39 up  2:24,  1 user,  load average: 1.37, 1.42, 1.40
+Tasks: 214 total,   2 running, 212 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 24.1 us,  1.4 sy,  0.0 ni, 74.4 id,  0.0 wa,  0.0 hi,  0.2 si,  0.0 st
+MiB Mem :   3832.4 total,    112.5 free,   2717.8 used,   1002.1 buff/cache
+MiB Swap:   9011.2 total,   4798.9 free,   4212.2 used.    725.1 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   4942 arun      20   0 8190084   2.2g    644 R 100.0  58.8  37:30.89 a.out    
+
+7.1mil = 40mb
+
+top - 16:07:15 up  2:53,  1 user,  load average: 1.65, 1.46, 1.38
+Tasks: 214 total,   3 running, 211 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 27.3 us,  1.6 sy,  0.0 ni, 70.8 id,  0.0 wa,  0.0 hi,  0.3 si,  0.0 st
+MiB Mem :   3832.4 total,    125.8 free,   2683.7 used,   1022.9 buff/cache
+MiB Swap:   9011.2 total,   3366.7 free,   5644.4 used.    780.6 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   4942 arun      20   0 9107588   2.2g    608 R  94.7  57.7  62:33.09 a.out    
+
+10.08mil = 58mb
+
+top - 16:40:31 up  3:26,  1 user,  load average: 1.37, 1.42, 1.38
+Tasks: 217 total,   3 running, 214 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 25.2 us,  2.2 sy,  0.0 ni, 70.9 id,  1.7 wa,  0.0 hi,  0.1 si,  0.0 st
+MiB Mem :   3832.4 total,    111.7 free,   2389.1 used,   1331.6 buff/cache
+MiB Swap:   9011.2 total,   2375.4 free,   6635.8 used.   1073.7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   4942 arun      20   0 9304196   1.7g    748 R  94.8  45.3  90:44.15 a.out    
