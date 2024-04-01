@@ -8,11 +8,11 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-int INSERT_INTO_IDX = 0;
+int INSERT_INTO_IDX = 1;
 int INSERT_INTO_SQLITE_BLASTER = 0;
 int INSERT_INTO_SQLITE = 0;
 int INSERT_INTO_LMDB = 0;
-int INSERT_INTO_ROCKSDB = 1;
+int INSERT_INTO_ROCKSDB = 0;
 int INSERT_INTO_WT = 0;
 int GEN_SQL = 0;
 
@@ -35,7 +35,7 @@ int GEN_SQL = 0;
 //#include "../sqlite_blaster/src/sqib/sqlite_index_blaster.h"
 //#include "../index_research/src/sqlite.h"
 //#include "../index_research/src/stager.h"
-#include "../sqlite_lsm/src/sqlite_lsm.h"
+#include "../madras-lsm/src/madras_lsm.hpp"
 
 #if defined(__APPLE__)
 #include <libproc.h>
@@ -97,7 +97,7 @@ const char *tail;
 wstring_convert<codecvt_utf8<wchar_t>> myconv;
 //sqlite_index_blaster *ix_obj;
 //stager *ix_obj;
-sqlite_lsm *ix_obj;
+madras_lsm *ix_obj;
 int start_at = 0;
 
 FILE *log_fp;
@@ -1175,7 +1175,7 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_IDX) {
         //ix_obj = new sqlite_index_blaster(2, 1, "key, value", "imain", page_size, cache_size, outFilename);
         //ix_obj = new stager(outFilename, cache_size);
-        ix_obj = new sqlite_lsm(outFilename, cache_size);
+        ix_obj = new madras_lsm(outFilename, cache_size);
     }
 
     if (INSERT_INTO_SQLITE_BLASTER) {
