@@ -211,28 +211,25 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
     //return;
     if (!INSERT_INTO_IDX)
       return;
-    int value_len = 4;
-    uint32_t count = 1;
+    int64_t count = 1;
     char key[400];
-    uint8_t val[5];
     strcpy(key, lang_code);
     strcat(key, " ");
     strcat(key, utf8word);
     word_len++;
     word_len += strlen(lang_code);
+    uint8_t val[10];
+    int value_len;
     bool is_found = ix_obj->get((const uint8_t *) key, (uint8_t) word_len, &value_len, val);
     if (is_found) {
-        count = read_uint32(val);
+        count = madras_dv1::cmn::read_svint60(val);
         count++;
-        write_uint32(val, count);
         words_updated1++;
     } else {
         words_inserted++;
         total_word_lens += word_len;
-        value_len = 4;
-        write_uint32(val, 1);
     }
-    ix_obj->put((const uint8_t *) key, (uint8_t) word_len, val, 4);
+    ix_obj->put(key, word_len, &count, 8);
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
@@ -1294,15 +1291,15 @@ int main(int argc, const char** argv)
         ix_obj->print_num_levels();
         uint8_t val[5];
         int value_len = 0;
-        int count;
+        int64_t count;
         bool is_found = ix_obj->get((uint8_t *) "en the ", 7, &value_len, val);
         if (is_found) {
-            count = read_uint32(val);
+            count = madras_dv1::cmn::read_svint60(val);
             cout << count << " " << value_len << endl;
         }
         is_found = ix_obj->get((uint8_t *) "en and ", 7, &value_len, val);
         if (is_found) {
-            count = read_uint32(val);
+            count = madras_dv1::cmn::read_svint60(val);
             cout << count << " " << value_len << endl;
         }
         cout << "Max word len: " << max_word_len << endl;
