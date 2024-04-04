@@ -206,6 +206,162 @@ uint32_t read_uint32(const uint8_t *ptr) {
     return ret;
 }
 
+void print_word_count_rdb(const char *word) {
+    string count_str;
+    Status s = rocksdb1->Get(ReadOptions(), word, &count_str);
+    if (!s.IsNotFound())
+        cout << " " << word << ": " << count_str;
+    else
+        cout << " " << word << ": 0";
+}
+
+void print_word_count_idx(const char *word) {
+    uint8_t val[10];
+    int value_len = 0;
+    int64_t count;
+    bool is_found = ix_obj->get((uint8_t *) word, strlen(word), &value_len, val);
+    if (is_found) {
+        count = madras_dv1::cmn::read_svint60(val);
+        cout << " " << word << ": " << count;
+    } else {
+        cout << " " << word << ": 0";
+    }
+}
+
+constexpr const char *selected_words[] = {"en the", "en to ", "en and", "en you", "en is ", "en in ", "en it ", "es que", "fr les", "de die", "fr bonjour", "es como", "en zulu", "en hedonist"};
+void print_word_counts() {
+    for (int i = 0; i < 14; i++) {
+        if (INSERT_INTO_IDX)
+            print_word_count_idx(selected_words[i]);
+        if (INSERT_INTO_ROCKSDB)
+            print_word_count_rdb(selected_words[i]);
+        if (i == 2 || i == 6 || i == 10)
+            cout << endl;
+    }
+}
+
+constexpr const char * lang_range_codes[29] = {"en", "el", "hy", "he", "ar", "hi", "bn", "gu", "or", "ta", "te", "kn", "ml", "si", "th", "lo", "bo", "my", "ka", "tl", "kh", "mn", "su", "zh", "ja", "ko", "jv", "vi", "em"};
+int get_char_lang(wchar_t c) {
+    switch (c) {
+        case 0x0600 ... 0x06FF: // arabic ar
+            return 4;
+        case 0x0900 ... 0x097F: // hindi hi
+        case 0xA8E0 ... 0xA8FF: // Devanagari Extended
+            return 5;
+        case 0x0980 ... 0x09FF: // Bengali bn
+            return 6;
+        case 0x0A80 ... 0x0AFF: // Gujarati gu
+            return 7;
+        case 0x0B00 ... 0x0B7F: // Oriya or
+            return 8;
+        case 0x0B80 ... 0x0BFF: // Tamil ta
+            return 9;
+        case 0x0C00 ... 0x0C7F: // Telugu te
+            return 10;
+        case 0x0C80 ... 0x0CFF: // Kannada kn
+            return 11;
+        case 0x0D00 ... 0x0D7F: // Malayalam ml
+            return 12;
+        case 0x0D80 ... 0x0DFF: // Sinhala si
+            return 13;
+        case 0x0E00 ... 0x0E7F: // Thai th
+            return 14;
+        case 0x1000 ... 0x109F: // Myanmar my
+        case 0xA9E0 ... 0xA9FF: // Myanmar Extended-B
+        case 0xAA60 ... 0xAA7F: // Myanmar Extended-A
+            return 17;
+        case 0x2030 ... 0x21AF: // Emoji
+        case 0x2310 ... 0x23FF:
+        case 0x25B0 ... 0x25FF:
+        case 0x2600 ... 0x276F:
+        case 0x2790 ... 0x27BF:
+        case 0x2930 ... 0x293F:
+        case 0x2B00 ... 0x2B1F:
+        case 0x2B50 ... 0x2B5F:
+        case 0x1F170 ... 0x1FADF:
+            return 28;
+        case 0x2E80 ... 0x2EFF: // CJK Radicals Supplement ch
+        case 0x3000 ... 0x303F: // CJK Symbols and Punctuation ch
+        case 0x3100 ... 0x312F: // Bopomofo ch
+        case 0x3190 ... 0x319F: // Kanbun zh
+        case 0x31A0 ... 0x31BF: // Bopomofo Extended zh
+        case 0x31C0 ... 0x31EF: // CJK Strokes zh
+        case 0x3200 ... 0x32FF: // Enclosed CJK Letters and Months ch
+        case 0x3300 ... 0x33FF: // CJK Compatibility
+        case 0x3400 ... 0x4DBF: // CJK Unified Ideographs Extension A
+        case 0x4E00 ... 0x9FFF: // CJK Unified Ideographs
+        case 0x20000 ... 0x2A6DF: // CJK Unified Ideographs Extension B
+        case 0x2A700 ... 0x2B73F: // CJK Unified Ideographs Extension C
+        case 0x2B740 ... 0x2B81F: // CJK Unified Ideographs Extension D
+        case 0x2B820 ... 0x2CEAF: // CJK Unified Ideographs Extension E
+        case 0x2CEB0 ... 0x2EBEF: // CJK Unified Ideographs Extension F
+        case 0x2EBF0 ... 0x2EE5F: // CJK Unified Ideographs Extension I
+        case 0x2F800 ... 0x2FA1F: // CJK Compatibility Ideographs Supplement
+        case 0x30000 ... 0x3134F: // CJK Unified Ideographs Extension G
+        case 0x31350 ... 0x323AF: // CJK Unified Ideographs Extension H
+            return 23;
+        case 0x2F00 ... 0x2FDF: // Kangxi Radicals ja
+        case 0x3040 ... 0x309F: // Hiragana ja
+        case 0x30A0 ... 0x30FF: // Katakana ja
+        case 0x31F0 ... 0x31FF: // Katakana Phonetic Extensions ja
+        case 0x1AFF0 ... 0x1AFFF: // Kana Extended-B
+        case 0x1B000 ... 0x1B0FF: // Kana Supplement
+        case 0x1B100 ... 0x1B12F: // Kana Extended-A
+        case 0x1B130 ... 0x1B16F: // Small Kana Extension
+            return 24;
+        case 0x3130 ... 0x318F: // Hangul Compatibility Jamo ko
+        case 0xA960 ... 0xA97F: // Hangul Jamo Extended-A
+        case 0xAC00 ... 0xD7AF: // Hangul Syllables
+        case 0xD7B0 ... 0xD7FF: // Hangul Jamo Extended-B
+            return 25;
+        case 0x1700 ... 0x171F: // Tagalog tl
+            return 19;
+        case 0x0F00 ... 0x0FFF: // Tibetan bo
+            return 16;
+        case 0x0E80 ... 0x0EFF: // Lao lo
+            return 15;
+        case 0x0370 ... 0x03FF: // greek el
+        case 0x1F00 ... 0x1FFF: // Greek Extended el
+            return 1;
+        case 0x0530 ... 0x058F: // armenian hy
+            return 2;
+        case 0x0590 ... 0x05FF: // hebrew he
+            return 3;
+        case 0x10A0 ... 0x10FF: // Georgian ka
+            return 18;
+        case 0x1780 ... 0x17FF: // Khmer km
+            return 20;
+        case 0x1800 ... 0x18AF: // Mongolian mn
+            return 21;
+        case 0x1B80 ... 0x1BBF: // Sundanese su
+            return 22;
+        case 0xA980 ... 0xA9DF: // Javanese
+            return 26;
+        case 0xAA80 ... 0xAADF: // Tai Viet
+            return 27;
+    }
+    return 0;
+}
+
+int recheck_lang(wstring& word, const char *lang) {
+    uint8_t word_counts[28];
+    memset(word_counts, '\0', sizeof(word_counts));
+    int max_lang = 0;
+    int max_lang_count = 0;
+    for (int i = 0; i < word.length(); i++) {
+      int new_lang = get_char_lang(word[i]);
+      word_counts[new_lang]++;
+      if (word_counts[new_lang] > max_lang_count) {
+        max_lang = new_lang;
+        max_lang_count = word_counts[new_lang];
+      }
+    }
+    if ((max_lang == 23 || max_lang == 24 || max_lang == 25)
+            && memmem("zhjako", 6, lang, 2) != NULL)
+        return 0;
+    return max_lang;
+}
+
 void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, const char *is_word, const char *source) {
     //cout << "[" << utf8word << "]" << endl;
     //return;
@@ -229,7 +385,7 @@ void insert_into_idx(const char *utf8word, int word_len, const char *lang_code, 
         words_inserted++;
         total_word_lens += word_len;
     }
-    ix_obj->put(key, word_len, &count, 8);
+    ix_obj->put(key, word_len, &count, 4);
     if (word_len > max_word_len)
         max_word_len = word_len;
 }
@@ -422,7 +578,7 @@ void output_sql(string& utf8word, int len, const char *lang_code, const char *is
 
 }
 
-void insert_data(char *lang_code, wstring& word, const char *is_word, int max_ord) {
+void insert_data(const char *lang_code, wstring& word, const char *is_word, int max_ord) {
 
     int word_len = word.length();
     if (word_len == 0 || word[word_len-1] == '~')
@@ -433,6 +589,10 @@ void insert_data(char *lang_code, wstring& word, const char *is_word, int max_or
         return;
 
     words_generated++;
+
+    int new_lang = recheck_lang(word, lang_code);
+    if (new_lang > 0)
+        lang_code = lang_range_codes[new_lang];
 
     string utf8word = myconv.to_bytes(word);
 
@@ -617,6 +777,7 @@ int is_word(int32_t ltr) {
 }
 
 void insert_grams_in_word(char *lang_code, wstring& word_to_insert, int word_len, int max_ord) {
+    return;
     int min_gram_len = max_ord > 2047 ? 2 : (max_ord > 126 ? 3 : 5);
     if (word_len <= min_gram_len)
         return;
@@ -836,16 +997,20 @@ void processPost(string& utf8body) {
     if (lines_processed % 10000 == 0) {
         if (INSERT_INTO_IDX || INSERT_INTO_SQLITE_BLASTER) {
             cache_stats stats = ix_obj->get_cache_stats();
-            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->get_num_levels()
-                  << " w" << stats.pages_written << " r" << stats.pages_read << " m" << stats.total_cache_misses
-                  << " f" << stats.cache_flush_count << " r" << stats.total_cache_req << " p" << stats.last_pages_to_flush << endl
-                  << " " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams
+            cout << line_count << " " << lines_processed << " " << ix_obj->get_max_key_len() << " " << ix_obj->get_num_levels();
+            print_word_counts();
+            cout << endl;
+                //   << " w" << stats.pages_written << " r" << stats.pages_read << " m" << stats.total_cache_misses
+                //   << " f" << stats.cache_flush_count << " r" << stats.total_cache_req << " p" << stats.last_pages_to_flush << endl
+            cout  << "  " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams
                   << " i" << words_inserted << " u" << words_updated1 << " u" << words_updated2 //<< " l" << total_word_lens 
                   << " t" << (double) ((double)((int) (duration<double>(steady_clock::now()-start).count() * 1000)) / 1000) << endl;
             //cout << ix_obj->size() << endl;
         } else {
-            cout << line_count << " " << lines_processed << " "
-                << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
+            cout << line_count << " " << lines_processed << " ";
+            print_word_counts();
+            cout << endl;
+            cout << "  " << words_generated << "=" << num_words << "+" << num_phrases << "+" << num_grams << " "
                 << words_inserted << " " << total_word_lens << " " 
                 << duration<double>(steady_clock::now()-start).count() << endl;
         }
@@ -1289,7 +1454,7 @@ int main(int argc, const char** argv)
     if (INSERT_INTO_IDX || INSERT_INTO_SQLITE_BLASTER) {
         ix_obj->print_stats(ix_obj->size());
         ix_obj->print_num_levels();
-        uint8_t val[5];
+        uint8_t val[10];
         int value_len = 0;
         int64_t count;
         bool is_found = ix_obj->get((uint8_t *) "en the ", 7, &value_len, val);
